@@ -9,6 +9,7 @@ import com.sharedcase.util.PdfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.time.LocalDate;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @create 2025/5/19 14:20
  */
+@Service
 public class CaseService {
 
     private static final Logger logger = LoggerFactory.getLogger(CaseService.class);

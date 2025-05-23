@@ -16,6 +16,12 @@ contract CaseContract {
     // 病例ID => 所有版本数组
     mapping(string => CaseVersion[]) private caseVersions;
 
+    // 所有病例ID（去重记录）
+    string[] private allCaseIds;
+
+    // 记录是否已存在某个病例ID
+    mapping(string => bool) private caseIdExists;
+
     event VersionAdded(string caseId, string versionCode, address indexed editor);
 
     /// 添加新版本
@@ -24,6 +30,11 @@ contract CaseContract {
         string memory versionCode,
         string memory ipfsHash
     ) public {
+        if (!caseIdExists[caseId]) {
+            allCaseIds.push(caseId);
+            caseIdExists[caseId] = true;
+        }
+
         CaseVersion memory version = CaseVersion(versionCode, ipfsHash, msg.sender, block.timestamp);
         caseVersions[caseId].push(version);
         emit VersionAdded(caseId, versionCode, msg.sender);
@@ -55,6 +66,7 @@ contract CaseContract {
         return result;
     }
 
+    /// 获取所有病例的所有版本号（不需要传 caseId）
     function getAllVersionCodes() public view returns (string[] memory) {
         uint total = 0;
         for (uint i = 0; i < allCaseIds.length; i++) {
@@ -72,5 +84,4 @@ contract CaseContract {
 
         return allCodes;
     }
-
 }

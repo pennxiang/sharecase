@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sharedcase.dao.CaseVersionMapper;
 import com.sharedcase.entity.CaseVersion;
-import com.sharedcase.entity.HotDiseaseDTO;
 import com.sharedcase.entity.User;
 import com.sharedcase.service.CaseContractService;
 import com.sharedcase.util.FiscoUtil;
@@ -19,9 +18,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * ClassName: CaseContractServiceImpl
@@ -47,7 +43,7 @@ public class CaseContractServiceImpl extends ServiceImpl<CaseVersionMapper, Case
 
     /**
      * 获取所有版本号
-     *
+     * <p>
      * 此方法通过调用caseContract对象的getAllVersionCodes().send()方法，从区块链上获取所有的版本号
      * 由于此调用可能会抛出异常，因此使用throws Exception来声明异常
      *
@@ -55,8 +51,8 @@ public class CaseContractServiceImpl extends ServiceImpl<CaseVersionMapper, Case
      * @throws Exception 如果获取过程中发生错误，抛出此异常
      */
     @Override
-    public List<String> getAllVersionCodes() throws Exception {
-        return caseContract.getAllVersionCodes().send(); // 链上原始获取
+    public List getAllVersionCodes() throws Exception {
+        return caseContract.getAllVersionCodes(); // 链上原始获取
     }
 
     /**

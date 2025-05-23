@@ -1,5 +1,6 @@
 package com.sharedcase.util;
 
+import com.sharedcase.config.ContractConfig;
 import org.fisco.bcos.sdk.v3.BcosSDK;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.config.exceptions.ConfigException;
@@ -7,8 +8,12 @@ import org.fisco.bcos.sdk.v3.contract.Contract;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -23,6 +28,7 @@ import java.util.Optional;
  * @version 1.0
  * @create 2025/5/19 11:48
  */
+@Component
 public class FiscoUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(FiscoUtil.class);
@@ -31,8 +37,13 @@ public class FiscoUtil {
     private String sdkConfigPath;
 
     // 注入合约地址 map
-    @Value("#{${fisco.contract.addresses}}")
-    private Map<String, String> contractAddresses;
+    @Autowired
+    private ContractConfig contractConfig;
+
+    public String contractAddresses(String contractName) {
+        return contractConfig.getAddresses().get(contractName);
+    };
+
 
     /**
      * 初始化 BcosSDK 实例
@@ -72,7 +83,7 @@ public class FiscoUtil {
      * 获取合约地址
      */
     public String contractAddress(String contractName) {
-        return Optional.ofNullable(contractAddresses.get(contractName))
+        return Optional.ofNullable(contractConfig.getAddresses().get(contractName))
                 .orElseThrow(() -> new RuntimeException("未配置合约地址: " + contractName));
     }
 
