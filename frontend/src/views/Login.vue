@@ -81,18 +81,35 @@ const handleLogin = async () => {
   justify-content: center;
   align-items: center;
   background-color: #f5f7fa;
+  padding: 20px; /* 兼容小屏 */
 }
 
 .login-card {
-  width: 400px;
+  width: 480px;             /* ✅ 加宽卡片 */
+  padding: 40px 30px;       /* ✅ 增加内边距 */
+  font-size: 16px;          /* ✅ 放大整体文字 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* ✅ 加点阴影更美观 */
+  border-radius: 8px;
+}
+
+.el-form-item {
+  margin-bottom: 24px;      /* ✅ 增加间距 */
+}
+
+.el-input__inner {
+  font-size: 16px;
+  height: 20px;             /* ✅ 提高输入框高度 */
 }
 
 .el-button {
   width: 100%;
-  margin-bottom: 10px;
+  height: 42px;
+  font-size: 16px;
 }
 
 .el-button + .el-button {
+  margin-top: 10px;         /* ✅ 垂直间距而不是横向 */
   margin-left: 0;
 }
+
 </style> 

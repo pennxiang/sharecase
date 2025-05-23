@@ -5,7 +5,8 @@ const router = createRouter({
     routes: [
         {
             path: '/',
-            redirect: '/login'
+            // redirect: '/login' // 实际开发
+            redirect: '/dashboard/cases' //直接到界面，测试
         },
         {
             path: '/login',
@@ -21,7 +22,7 @@ const router = createRouter({
             path: '/dashboard',
             name: 'Dashboard',
             component: () => import('../views/Dashboard.vue'),
-            meta: { requiresAuth: true },
+            // meta: { requiresAuth: true },
             children: [
                 {
                     path: 'cases',
@@ -59,7 +60,7 @@ const router = createRouter({
 })
 
 // 路由守卫
-router.beforeEach((to, from, next) => {
+/*router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('token');
     if (to.matched.some(record => record.meta.requiresAuth)) {
         if (!token) {
@@ -73,6 +74,6 @@ router.beforeEach((to, from, next) => {
     } else {
         next();
     }
-});
+});*/
 
 export default router

@@ -1,3 +1,5 @@
+// 定义全局TypeScript类型
+
 export interface User {
   id?: number;
   name: string;
