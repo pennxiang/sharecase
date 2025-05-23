@@ -42,6 +42,13 @@ ipfs:
 
 fisco:
   sdkConfigPath: classpath:sdk/config.toml
+  contract:
+    addresses:
+      UserRegistry: "0xabc...123"
+      CaseContract: "0xdef...456"
+      DoctorRegistry: "0xghi...789"
+      ICDRegistry: "0xjkl...000"
+
 
 contract:
   case:

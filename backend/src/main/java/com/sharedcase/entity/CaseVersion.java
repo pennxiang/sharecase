@@ -14,7 +14,7 @@ import java.util.List;
  * ClassName: CaseVersion
  * Package: com.sharedcase.entity
  * Description:
- *      版本记录（链上信息 + IPFS）
+ *      版本记录（链上信息 + IPFS），存储在区块链上
  * @author 向鹏
  * @version 1.0
  * @create 2025/5/19 13:00
@@ -31,22 +31,18 @@ public class CaseVersion {
     /** 版本号，例如：J18.9:1:240519124522 */
     private String versionCode;
 
-    /** IPFS 内容哈希 */
+    /** IPFS 病例详情哈希 */
     private String ipfsHash;
 
-    /** 病情简要描述（链下展示用） */
-    private String summary;
+    /** 患者链上地址 */
+    private String patient;
 
-    /** 编辑人链上地址 */
-    private String editor;
-
-    /** 检查报告ipfs地址(多个) */
-    @TableField(typeHandler = JacksonTypeHandler.class)
-    private List<String> infoAttachments;
+    /** 医生链上地址 */
+    private String doctor;
 
     /** 版本上传时间 */
     private LocalDateTime createTime;
 
-    /** 链上交易哈希（方便追踪） */
+    /** 链上交易哈希 */
     private String chainTxHash;
 }

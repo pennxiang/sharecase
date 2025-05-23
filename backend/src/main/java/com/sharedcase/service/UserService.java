@@ -14,11 +14,30 @@ import com.sharedcase.entity.User;
  */
 public interface UserService extends IService<User> {
 
+    /**
+     * 注册账号
+     * 注册时自动将账号存放到fisco上，并返还一个哈希地址
+     * @param user
+     * @return
+     */
     User register(User user);
 
-    User login(String username, String password);
+    /**
+     * 登录账号
+     * @param idCard
+     * @param password
+     * @return
+     */
+    User login(String idCard, String password);
 
-    User findByIdCard(String idCard);
+    /**
+     * 获取用户身份
+     */
+    public String getUserRole(String idCard);
 
-    User findById(Long id);
+    /**
+     * 更新信息
+     */
+    public boolean updateUserInfo(User user);
+
 }

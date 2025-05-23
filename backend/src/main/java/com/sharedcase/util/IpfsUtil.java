@@ -27,15 +27,15 @@ public class IpfsUtil {
     private static final Logger logger = LoggerFactory.getLogger(IpfsUtil.class);
 
     @Value("${ipfs.multiAddr}")
-    private String ipfsMultiAddr;
+    private static String ipfsMultiAddr;
 
     @Value("${ipfs.gateway}")
-    private String ipfsGateway;
+    private static String ipfsGateway;
 
-    private IPFS ipfs;
+    private static IPFS ipfs;
 
     @PostConstruct
-    public void init() {
+    public static void init() {
         ipfs = new IPFS(ipfsMultiAddr);
         logger.info("IPFS连接成功!");
     }
@@ -43,7 +43,7 @@ public class IpfsUtil {
     /**
      * 上传文件到ipfs
      */
-    public String upload(File file, String DirectoryName) throws Exception {
+    public static String upload(File file, String DirectoryName) throws Exception {
         String fileName = file.getName();
 
         // 上传到ipfs
@@ -66,7 +66,7 @@ public class IpfsUtil {
     /**
      * 下载文件（以 byte[] 返回）
      */
-    public File download(String cid, String mfsPath, String saveDir) throws IOException {
+    public static File download(String cid, String mfsPath, String saveDir) throws IOException {
         // 1. 校验参数
         if (cid == null || mfsPath == null || saveDir == null) {
             throw new IllegalArgumentException("CID、MFS路径和保存目录不能为空");
@@ -102,7 +102,7 @@ public class IpfsUtil {
     /**
      * 删除文件（取消 pin + 回收 GC）
      */
-    public void delete(String cid, String mfsPath) throws IOException {
+    public static void delete(String cid, String mfsPath) throws IOException {
         if (mfsPath != null && !mfsPath.isEmpty()) {
             ipfs.files.rm(mfsPath, true, true);
         }
@@ -120,7 +120,7 @@ public class IpfsUtil {
     /**
      * 获取公共访问地址
      */
-    public String getGatewayUrl(String cid) {
+    public static String getGatewayUrl(String cid) {
         return ipfsGateway + cid;
     }
 }

@@ -1,6 +1,5 @@
 package com.sharedcase.util;
 
-import org.springframework.stereotype.Component;
 
 /**
  * ClassName: DesensitizeUtil
@@ -15,14 +14,14 @@ public class DesensitizeUtil {
 
     public static String maskIdCard(String IdCard) {
         if (IdCard.length() == 18) {
-            return IdCard.substring(0, 2) + "*********" + IdCard.substring(IdCard.length() - 2);
+            return IdCard.substring(0, 2) + "*********" + IdCard.substring(16);
         }
         return null;
     }
 
     public static String maskPhone(String phone) {
         if (phone.length() == 11) {
-            return phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4) ;
+            return phone.substring(0, 3) + "****" + phone.substring(7) ;
         }
         return null;
     }

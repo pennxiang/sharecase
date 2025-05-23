@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * ClassName: FiscoUtil
@@ -28,6 +30,9 @@ public class FiscoUtil {
     @Value("${fisco.sdkConfigPath}")
     private String sdkConfigPath;
 
+    // 注入合约地址 map
+    @Value("#{${fisco.contract.addresses}}")
+    private Map<String, String> contractAddresses;
 
     /**
      * 初始化 BcosSDK 实例
@@ -61,6 +66,14 @@ public class FiscoUtil {
         CryptoKeyPair keyPair = fiscoClient.getCryptoSuite().getCryptoKeyPair();
         logger.info("获取密钥对，地址：{}", keyPair.getAddress());
         return keyPair;
+    }
+
+    /**
+     * 获取合约地址
+     */
+    public String contractAddress(String contractName) {
+        return Optional.ofNullable(contractAddresses.get(contractName))
+                .orElseThrow(() -> new RuntimeException("未配置合约地址: " + contractName));
     }
 
     /**

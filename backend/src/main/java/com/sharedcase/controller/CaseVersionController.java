@@ -29,11 +29,11 @@ public class CaseVersionController {
     @Autowired
     private CaseVersionService caseVersionService;
 
-    @GetMapping("/list/{caseId}")
-    public AjaxResult getVersions(@PathVariable String caseId) {
-        List<CaseVersion> versions = caseVersionService.getAllVersions(caseId);
-        return AjaxResult.success("获取成功", versions);
-    }
+//    @GetMapping("/list/{caseId}")
+//    public AjaxResult getVersions(@PathVariable String caseId) {
+//        List<CaseVersion> versions = caseVersionService.getAllVersions(caseId);
+//        return AjaxResult.success("获取成功", versions);
+//    }
 
     @PostMapping("/upload")
     public AjaxResult uploadVersion(
@@ -43,9 +43,19 @@ public class CaseVersionController {
             @RequestParam Long uploaderId
     ) {
         try {
+            // 上传至ipfs，返回哈希函数
+
+            // 将ipfs得到的哈希函数，存储到fisco，返回哈希函数
+
+            // 存储fisco返回的哈希函数到用户表
+
+            // 返回结果，中间任有未完成的回滚
+
+
             // 写入临时文件以便 IPFS 读取
             File tempFile = File.createTempFile("upload_", "_" + file.getOriginalFilename());
             file.transferTo(tempFile);
+            // 先查当前用户是否有xx：的版本
             String versionCode = "0xtest";
             CaseVersion version = caseVersionService.uploadVersion(caseId, versionCode, tempFile, summary, uploaderId);
             return AjaxResult.success("版本上传成功", version);
@@ -53,4 +63,20 @@ public class CaseVersionController {
             return AjaxResult.error("上传失败: " + e.getMessage());
         }
     }
+
+    // TODO
+    @PostMapping("/download")
+    public AjaxResult downloadVersion() {
+
+        // 传入fisco哈希函数、caseId，fisco进行认证，返回ipfs哈希
+
+        // 根据ipfs哈希，用户希望保存的地址找到资源下载
+
+        return AjaxResult.success("下载成功");
+    }
+
+    // TODO
+    /**
+     * 统计某个时间段的Top k发病率的病症
+     */
 }
