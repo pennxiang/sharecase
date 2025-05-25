@@ -126,13 +126,15 @@ const handleRegister = async () => {
 .register-container {
   height: 100vh;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
+    padding: 20px 100px; /* 进一步减少右侧内边距，使注册界面左移 */
   align-items: center;
-  background-color: #f5f7fa;
+  /* background-color: #f5f7fa; */
 }
 
 .register-card {
   width: 400px;
+  opacity: 0.9; /* 设置注册框透明度为 0.8，数值范围 0 到 1，越接近 0 越透明 */
 }
 
 .el-button {
@@ -143,4 +145,4 @@ const handleRegister = async () => {
 .el-button + .el-button {
   margin-left: 0;
 }
-</style> 
+</style>
