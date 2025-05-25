@@ -21,6 +21,10 @@ public class CaseInfo {
     private String doctor; // 链上写入人地址
     private LocalDateTime visitTime;
 
+    private String doctorAddress;
+    private String patientAddress;
+    private Long rawTimestamp;
+
     // 可选补充展示字段
     private String pdfUrl; // IPFS 网关路径
 }

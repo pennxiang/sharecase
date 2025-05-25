@@ -35,7 +35,3 @@ public class CaseDetail {
     // 生成时间
     private LocalDateTime visitTime;
 }
-    /*
-    @TableField(typeHandler = JacksonTypeHandler.class)
-    private List<String> infoAttachments;
-    */

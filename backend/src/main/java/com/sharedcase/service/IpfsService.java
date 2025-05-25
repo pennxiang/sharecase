@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
 
 /**
  * ClassName: IpfsService
@@ -61,8 +63,25 @@ public class IpfsService {
      * @param ipfsHash ipfsHash
      * @return file
      */
-    File download(String ipfsHash) throws Exception {
-        // TODO 已在ipfs工具类实现
-        return null;
-    };
+    public File download(String ipfsHash) throws Exception {
+        try {
+            Multihash filePointer = Multihash.fromBase58(ipfsHash);
+            byte[] data = ipfs.cat(filePointer);
+
+            // 临时目录保存，后缀为 .pdf
+            File tempFile = Files.createTempFile("ipfs_" + ipfsHash.substring(0, 6), ".pdf").toFile();
+
+            try (FileOutputStream out = new FileOutputStream(tempFile)) {
+                out.write(data);
+                out.flush();
+            }
+
+            logger.info("IPFS 文件下载成功: {} -> {}", ipfsHash, tempFile.getAbsolutePath());
+            return tempFile;
+
+        } catch (Exception e) {
+            logger.error("IPFS 下载失败: {}", ipfsHash, e);
+            throw new RuntimeException("IPFS 下载失败: " + ipfsHash, e);
+        }
+    }
 }

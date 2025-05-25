@@ -2,6 +2,7 @@ package com.sharedcase.service;
 
 import com.CaseContract;
 import com.sharedcase.DTO.CaseInfo;
+import com.sharedcase.DTO.IcdFrequency;
 import com.sharedcase.config.ContractConfig;
 import com.sharedcase.entity.CaseDetail;
 import com.sharedcase.util.FiscoUtil;
@@ -12,6 +13,7 @@ import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple5;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
+import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +24,9 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * ClassName: CaseDetailService
@@ -70,7 +71,7 @@ public class CaseService {
      */
     public void createCase(CaseDetail caseDetail) throws Exception {
         // 1. 设置就诊时间
-        caseDetail.setVisitTime(LocalDateTime.now());
+//        caseDetail.setVisitTime(LocalDateTime.now());
 
         // 2. 导出 PDF 文件
         System.out.println("构建PDF...");
@@ -79,18 +80,20 @@ public class CaseService {
         // 3. 上传到 IPFS
         System.out.println("上传到IPFS...");
         String ipfsHash = ipfsService.upload(pdf, "/cases/" + caseDetail.getCaseId());
-//        String ipfsHash = IpfsUtil.upload(pdf, "/cases/" + caseDetail.getCaseId());
         System.out.println("上传成功，CID: " + ipfsHash);
         caseDetail.setIpfsHash(ipfsHash);
 
         // 4. 写入区块链
         System.out.println("写入区块链...");
+        System.out.println("合约地址: " + caseContract.getContractAddress());
+
         TransactionReceipt transactionReceipt = caseContract.addCase(
                 caseDetail.getCaseId(),
                 caseDetail.getIcdCode(),
                 ipfsHash,
                 caseDetail.getPatientAddress()
         );
+
         if (!transactionReceipt.isStatusOK()) {
             logger.error("链上写入失败: " + transactionReceipt.getMessage());
             throw new RuntimeException("链上写入失败: " + transactionReceipt.getMessage());
@@ -103,20 +106,41 @@ public class CaseService {
     }
 
     public List<CaseInfo> getCasesByPatient(String patientAddress) throws Exception {
-        int count = caseContract.getCaseCount(patientAddress).intValue();
         List<CaseInfo> result = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
-            Tuple5<String, String, String, String, BigInteger> record = caseContract.getCase(patientAddress, BigInteger.valueOf(i));
+        BigInteger count = caseContract.getCaseCount(patientAddress);
+
+        for (BigInteger i = BigInteger.ZERO; i.compareTo(count) < 0; i = i.add(BigInteger.ONE)) {
+            Tuple5<String, String, String, String, BigInteger> tuple = caseContract.getCase(patientAddress, i);
+
+            BigInteger rawTimestamp = tuple.getValue5();
+            long ts = rawTimestamp.longValue();
+            if (ts > 9999999999L) { // 超过10位，说明是毫秒，转为秒
+                ts = ts / 1000;
+            }
+            LocalDateTime visitTime = Instant.ofEpochSecond(ts)
+                    .atZone(ZoneId.of("Asia/Shanghai"))
+                    .toLocalDateTime();
+
+            // 打印日志
+            System.out.println("【病例】caseId=" + tuple.getValue1()
+                    + ", 原始时间戳=" + rawTimestamp
+                    + ", 本地时间=" + visitTime);
+
             CaseInfo info = new CaseInfo();
-            info.setCaseId(record.getValue1());
-            info.setIcdCode(record.getValue2());
-            info.setIpfsHash(record.getValue3());
-            info.setDoctor(record.getValue4());
-            info.setVisitTime(Instant.ofEpochSecond(record.getValue5().longValue()).atZone(ZoneId.systemDefault()).toLocalDateTime());
+            info.setCaseId(tuple.getValue1());
+            info.setIcdCode(tuple.getValue2());
+            info.setIpfsHash(tuple.getValue3());
+            info.setDoctorAddress(tuple.getValue4());
+            info.setPatientAddress(patientAddress);
+            info.setVisitTime(visitTime);
+            info.setRawTimestamp(rawTimestamp.longValue());
+
             result.add(info);
         }
+
         return result;
     }
+
 
     public List<CaseInfo> getCasesByIcd(String patientAddress, String icdCode) throws Exception {
         List<CaseInfo> all = getCasesByPatient(patientAddress);
@@ -127,10 +151,207 @@ public class CaseService {
 
     public Map<String, Long> getIcdStats(String patientAddress, LocalDateTime from, LocalDateTime to) throws Exception {
         List<CaseInfo> all = getCasesByPatient(patientAddress);
+
         return all.stream()
-                .filter(c -> !c.getVisitTime().isBefore(from) && !c.getVisitTime().isAfter(to))
+                .filter(c -> {
+                    long ts = c.getRawTimestamp(); // 从 CaseInfo 拿原始时间戳
+                    if (ts > 9999999999L) ts /= 1000;
+                    LocalDateTime visitTime = Instant.ofEpochSecond(ts)
+                            .atZone(ZoneId.of("Asia/Shanghai"))
+                            .toLocalDateTime();
+                    return !visitTime.isBefore(from) && !visitTime.isAfter(to);
+                })
                 .collect(Collectors.groupingBy(CaseInfo::getIcdCode, Collectors.counting()));
     }
+
+    public List<CaseDetail> getCasesByPatientAndTimeRange(String patient, LocalDateTime from, LocalDateTime to) throws Exception {
+        List<CaseDetail> result = new ArrayList<>();
+        BigInteger count = caseContract.getCaseCount(patient);
+
+        for (BigInteger i = BigInteger.ZERO; i.compareTo(count) < 0; i = i.add(BigInteger.ONE)) {
+            Tuple5<String, String, String, String, BigInteger> tuple = caseContract.getCase(patient, i);
+
+            long ts = tuple.getValue5().longValue();
+            if (ts > 9999999999L) ts /= 1000;
+            LocalDateTime visitTime = Instant.ofEpochSecond(ts)
+                    .atZone(ZoneId.of("Asia/Shanghai"))
+                    .toLocalDateTime();
+
+            if (!visitTime.isBefore(from) && !visitTime.isAfter(to)) {
+                CaseDetail detail = new CaseDetail();
+                detail.setCaseId(tuple.getValue1());
+                detail.setIcdCode(tuple.getValue2());
+                detail.setIpfsHash(tuple.getValue3());
+                detail.setDoctorAddress(tuple.getValue4());
+                detail.setPatientAddress(patient);
+                detail.setVisitTime(visitTime);
+                result.add(detail);
+            }
+        }
+
+        return result;
+    }
+
+
+
+    public List<IcdFrequency> getICDFrequencySorted(boolean desc) {
+        List<String> allPatientAddresses;
+        try {
+            allPatientAddresses = caseContract.getAllPatients();
+        } catch (ContractException e) {
+            throw new RuntimeException("获取患者地址失败: " + e.getMessage(), e);
+        }
+
+        Map<String, Long> icdMap = new HashMap<>();
+
+        for (String patient : allPatientAddresses) {
+            BigInteger count;
+            try {
+                count = caseContract.getCaseCount(patient);
+            } catch (ContractException e) {
+                throw new RuntimeException("获取患者病例数量失败: " + e.getMessage(), e);
+            }
+
+            for (BigInteger i = BigInteger.ZERO; i.compareTo(count) < 0; i = i.add(BigInteger.ONE)) {
+                Tuple5<String, String, String, String, BigInteger> tuple;
+                try {
+                    tuple = caseContract.getCase(patient, i);
+                } catch (ContractException e) {
+                    throw new RuntimeException("获取病例失败: " + e.getMessage(), e);
+                }
+
+                String icdCode = tuple.getValue2();
+                icdMap.merge(icdCode, 1L, Long::sum);
+            }
+        }
+
+        return icdMap.entrySet().stream()
+                .sorted(desc
+                        ? Map.Entry.<String, Long>comparingByValue().reversed()
+                        : Map.Entry.comparingByValue())
+                .map(e -> new IcdFrequency(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    public List<CaseDetail> getCasesByTimeRange(LocalDateTime from, LocalDateTime to) throws Exception {
+        List<String> allPatients = caseContract.getAllPatients();
+        List<CaseDetail> result = new ArrayList<>();
+
+        for (String patient : allPatients) {
+            BigInteger count = caseContract.getCaseCount(patient);
+            for (BigInteger i = BigInteger.ZERO; i.compareTo(count) < 0; i = i.add(BigInteger.ONE)) {
+                Tuple5<String, String, String, String, BigInteger> tuple = caseContract.getCase(patient, i);
+
+                BigInteger rawTimestamp = tuple.getValue5();
+                long ts = rawTimestamp.longValue();
+                if (ts > 9999999999L) { // 判断是否为毫秒
+                    ts /= 1000;
+                }
+
+                LocalDateTime visitTime = Instant.ofEpochSecond(ts)
+                        .atZone(ZoneId.of("Asia/Shanghai"))
+                        .toLocalDateTime();
+
+                if (!visitTime.isBefore(from) && !visitTime.isAfter(to)) {
+                    CaseDetail detail = new CaseDetail();
+                    detail.setCaseId(tuple.getValue1());
+                    detail.setIcdCode(tuple.getValue2());
+                    detail.setIpfsHash(tuple.getValue3());
+                    detail.setPatientAddress(patient);
+                    detail.setDoctorAddress(tuple.getValue4());
+                    detail.setVisitTime(visitTime);
+                    result.add(detail);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public Map<String, Long> getIcdStatsByTimeRange(LocalDateTime from, LocalDateTime to) throws Exception {
+        List<String> allPatients = caseContract.getAllPatients();
+        Map<String, Long> icdCounter = new HashMap<>();
+
+        for (String patient : allPatients) {
+            BigInteger count = caseContract.getCaseCount(patient);
+            for (BigInteger i = BigInteger.ZERO; i.compareTo(count) < 0; i = i.add(BigInteger.ONE)) {
+                Tuple5<String, String, String, String, BigInteger> tuple = caseContract.getCase(patient, i);
+                long ts = tuple.getValue5().longValue();
+                if (ts > 9999999999L) ts /= 1000;
+                LocalDateTime visitTime = Instant.ofEpochSecond(ts)
+                        .atZone(ZoneId.of("Asia/Shanghai"))
+                        .toLocalDateTime();
+
+                if (!visitTime.isBefore(from) && !visitTime.isAfter(to)) {
+                    String icd = tuple.getValue2();
+                    icdCounter.put(icd, icdCounter.getOrDefault(icd, 0L) + 1);
+                }
+            }
+        }
+
+        return icdCounter;
+    }
+
+
+    public List<CaseDetail> searchCasesFuzzy(String keyword) throws Exception {
+        List<String> allPatients = caseContract.getAllPatients();
+        List<CaseDetail> result = new ArrayList<>();
+
+        for (String patient : allPatients) {
+            BigInteger count = caseContract.getCaseCount(patient);
+            for (BigInteger i = BigInteger.ZERO; i.compareTo(count) < 0; i = i.add(BigInteger.ONE)) {
+                Tuple5<String, String, String, String, BigInteger> tuple = caseContract.getCase(patient, i);
+
+                File pdfFile = ipfsService.download(tuple.getValue3());
+                CaseDetail detail = PdfUtil.parsePdfToCaseDetail(pdfFile);
+                detail.setCaseId(tuple.getValue1());
+                detail.setPatientAddress(patient);
+                detail.setDoctorAddress(tuple.getValue4());
+                detail.setVisitTime(Instant.ofEpochSecond(tuple.getValue5().longValue())
+                        .atZone(ZoneId.of("Asia/Shanghai")).toLocalDateTime());
+
+                // 模糊匹配（title、diagnosis、chiefComplaint）
+                if ((detail.getTitle() != null && detail.getTitle().contains(keyword)) ||
+                        (detail.getDiagnosis() != null && detail.getDiagnosis().contains(keyword)) ||
+                        (detail.getChiefComplaint() != null && detail.getChiefComplaint().contains(keyword))) {
+                    result.add(detail);
+                }
+
+                pdfFile.delete();
+            }
+        }
+
+        return result;
+    }
+
+    public Map<String, Object> compareCases(String ipfsHash1, String ipfsHash2) throws Exception {
+        File pdf1 = ipfsService.download(ipfsHash1);
+        File pdf2 = ipfsService.download(ipfsHash2);
+
+        CaseDetail case1 = PdfUtil.parsePdfToCaseDetail(pdf1);
+        CaseDetail case2 = PdfUtil.parsePdfToCaseDetail(pdf2);
+
+        Map<String, Object> diff = new HashMap<>();
+
+        if (!Objects.equals(case1.getDiagnosis(), case2.getDiagnosis())) {
+            diff.put("诊断不同", List.of(case1.getDiagnosis(), case2.getDiagnosis()));
+        }
+        if (!Objects.equals(case1.getDoctorAdvice(), case2.getDoctorAdvice())) {
+            diff.put("医嘱不同", List.of(case1.getDoctorAdvice(), case2.getDoctorAdvice()));
+        }
+        if (!Objects.equals(case1.getPresentIllness(), case2.getPresentIllness())) {
+            diff.put("现病史不同", List.of(case1.getPresentIllness(), case2.getPresentIllness()));
+        }
+        // 可继续扩展字段对比
+
+        pdf1.delete();
+        pdf2.delete();
+
+        return diff;
+    }
+
+
+
     /*
     *//**
      * 根据ipfs hash获取病例信息

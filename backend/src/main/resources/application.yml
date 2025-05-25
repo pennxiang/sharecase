@@ -53,7 +53,10 @@ fisco:
   contract:
     addresses:
       userRegistry: "0xd24180cc0fef2f3e545de4f9aafc09345cd08903"
-      caseContract: "0x19a6434154de51c7a7406edf312f01527441b561"
+      caseContract: "0xafcdafa5be0a0e2c34328adf10d893a591b5e774"
+      # v1
+#      caseContract: "0x19a6434154de51c7a7406edf312f01527441b561"
+
 
 
 contract:

@@ -2,6 +2,7 @@ package com.sharedcase.controller;
 
 import cn.hutool.core.util.IdUtil;
 import com.sharedcase.DTO.CaseInfo;
+import com.sharedcase.DTO.IcdFrequency;
 import com.sharedcase.entity.*;
 import com.sharedcase.service.CaseContractService;
 import com.sharedcase.service.CaseService;
@@ -40,10 +41,9 @@ public class CaseController {
 
     /**
      * 创建病例 【医生端】
-     * @param aCaseDetail
+     * @param caseDetail 病例详情
      * @return
      */
-
     @Operation(summary = "医生创建病例")
     @PostMapping("/create")
     public AjaxResult create(@RequestBody CaseDetail caseDetail) {
@@ -79,7 +79,7 @@ public class CaseController {
         }
     }
 
-    @Operation(summary = "统计某人某段时间类的所有病例")
+    @Operation(summary = "统计某人某段时间类的所有病例数")
     @GetMapping("/stats")
     public AjaxResult getIcdStats(@RequestParam String patientAddress,
                                   @RequestParam String from,
@@ -93,6 +93,86 @@ public class CaseController {
             return AjaxResult.error("统计失败: " + e.getMessage());
         }
     }
+
+    @Operation(summary = "某人的某段时间类的所有病例")
+    @GetMapping("/cases/patient/range")
+    public AjaxResult getCasesByPatientAndTime(@RequestParam String address,
+                                               @RequestParam String from,
+                                               @RequestParam String to) {
+        try {
+            LocalDateTime start = LocalDateTime.parse(from);
+            LocalDateTime end = LocalDateTime.parse(to);
+            List<CaseDetail> list = caseService.getCasesByPatientAndTimeRange(address, start, end);
+            return AjaxResult.success(list);
+        } catch (Exception e) {
+            return AjaxResult.error("查询失败：" + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "全平台 ICD 频率统计")
+    @GetMapping("/icd-frequency")
+    public AjaxResult getICDFrequency(@RequestParam(defaultValue = "true") boolean desc) {
+        try {
+            List<IcdFrequency> list = caseService.getICDFrequencySorted(desc);
+            return AjaxResult.success(list);
+        } catch (Exception e) {
+            return AjaxResult.error("统计失败: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "筛选某时间段的病例")
+    @GetMapping("/filterByTime")
+    public AjaxResult filterByTime(@RequestParam String from,
+                                   @RequestParam String to) {
+        try {
+            LocalDateTime fromTime = LocalDateTime.parse(from);
+            LocalDateTime toTime = LocalDateTime.parse(to);
+            List<CaseDetail> cases = caseService.getCasesByTimeRange(fromTime, toTime);
+            return AjaxResult.success(cases);
+        } catch (Exception e) {
+            return AjaxResult.error("筛选失败: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "筛选某时间段的病发率")
+    @GetMapping("/cases/range/icd-stat")
+    public AjaxResult getIcdStats(@RequestParam String from,
+                                  @RequestParam String to) {
+        try {
+            LocalDateTime start = LocalDateTime.parse(from);
+            LocalDateTime end = LocalDateTime.parse(to);
+            Map<String, Long> stat = caseService.getIcdStatsByTimeRange(start, end);
+            return AjaxResult.success(stat);
+        } catch (Exception e) {
+            return AjaxResult.error("统计失败：" + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "模糊搜索病例")
+    @GetMapping("/search")
+    public AjaxResult searchCases(@RequestParam String keyword) {
+        try {
+            List<CaseDetail> matched = caseService.searchCasesFuzzy(keyword);
+            return AjaxResult.success(matched);
+        } catch (Exception e) {
+            return AjaxResult.error("模糊搜索失败: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "比较两个病例的 PDF 差异")
+    @GetMapping("/compare")
+    public AjaxResult compareCases(@RequestParam String hash1, @RequestParam String hash2) {
+        try {
+            Map<String, Object> diff = caseService.compareCases(hash1, hash2);
+            return AjaxResult.success(diff);
+        } catch (Exception e) {
+            return AjaxResult.error("对比失败: " + e.getMessage());
+        }
+    }
+
+
+
+
 
     /**
      * 查看当前病人相关的病例 【医生端】
