@@ -1,6 +1,13 @@
 package com.sharedcase.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.sharedcase.config.IpfsConfig;
+import io.ipfs.api.IPFS;
+import io.ipfs.api.MerkleNode;
+import io.ipfs.api.NamedStreamable;
+import io.ipfs.multihash.Multihash;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -17,16 +24,36 @@ import java.io.File;
 @Service
 public class IpfsService {
 
-    /**
-     * 上传文件
-     * @param file 文件
-     * @param DirectoryName 文件目录
-     * @return ipfsHash
-     */
-    String upload(File file, String DirectoryName) throws Exception {
-        // TODO
-        return null;
-    };
+    private static final Logger logger = LoggerFactory.getLogger(IpfsService.class);
+
+    private final IPFS ipfs;
+
+    public IpfsService(IpfsConfig props) {
+        this.ipfs = new IPFS(props.getMultiAddr());
+        logger.info("IPFS 连接成功: {}", props.getMultiAddr());
+    }
+
+    public String upload(File file, String dir) throws Exception {
+        NamedStreamable.FileWrapper fileWrapper = new NamedStreamable.FileWrapper(file);
+        MerkleNode node = ipfs.add(fileWrapper).get(0);
+        Multihash hash = node.hash;
+
+        ipfs.pin.add(hash);
+        ipfs.files.mkdir(dir, true);
+        ipfs.files.cp("/ipfs/" + hash.toBase58(), dir + "/" + file.getName(), true);
+
+        //上传成功后，尝试删除本地文件
+        if (file.exists()) {
+            if (file.delete()) {
+                logger.info("临时文件已删除: {}", file.getAbsolutePath());
+            } else {
+                logger.warn("临时文件删除失败: {}", file.getAbsolutePath());
+            }
+        }
+
+        return hash.toBase58();
+    }
+
 
 
     /**
@@ -35,7 +62,7 @@ public class IpfsService {
      * @return file
      */
     File download(String ipfsHash) throws Exception {
-        // TODO
+        // TODO 已在ipfs工具类实现
         return null;
     };
 }

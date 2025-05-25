@@ -1,6 +1,5 @@
 package com.sharedcase.dao.impl;
 
-import com.sharedcase.dao.CaseVersionMapper;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

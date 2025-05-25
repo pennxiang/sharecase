@@ -1,5 +1,7 @@
+/*
 package com.sharedcase.controller;
 
+*/
 /**
  * ClassName: CaseVsersionController
  * Package: com.sharedcase.controller
@@ -8,11 +10,13 @@ package com.sharedcase.controller;
  * @author 向鹏
  * @version 1.0
  * @create 2025/5/19 14:21
- */
+ *//*
+
 
 import com.sharedcase.entity.AjaxResult;
 import com.sharedcase.entity.CaseVersion;
 import com.sharedcase.service.CaseVersionService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +39,17 @@ public class CaseVersionController {
 //        return AjaxResult.success("获取成功", versions);
 //    }
 
+    */
+/**
+     * 【医生】
+     * @param caseId
+     * @param file
+     * @param summary
+     * @param uploaderId
+     * @return
+     *//*
+
+    @Operation(summary = "上传病例版本")
     @PostMapping("/upload")
     public AjaxResult uploadVersion(
             @RequestParam String caseId,
@@ -65,6 +80,14 @@ public class CaseVersionController {
     }
 
     // TODO
+
+    */
+/**
+     * 【医生、用户】
+     * @return
+     *//*
+
+    @Operation(summary = "下载病例版本")
     @PostMapping("/download")
     public AjaxResult downloadVersion() {
 
@@ -76,7 +99,9 @@ public class CaseVersionController {
     }
 
     // TODO
-    /**
+    */
+/**
      * 统计某个时间段的Top k发病率的病症
-     */
-}
+     *//*
+
+}*/

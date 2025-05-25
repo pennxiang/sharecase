@@ -1,7 +1,6 @@
 package com.sharedcase.service;
 
 import com.CaseContract;
-import com.sharedcase.entity.CaseVersion;
 import com.sharedcase.entity.HotDiseaseDTO;
 import com.sharedcase.exception.ChainWriteException;
 import com.sharedcase.util.FiscoUtil;
@@ -55,7 +54,6 @@ public interface CaseContractService {
     /**
      * 获取某病例的所有历史版本（链上）
      */
-    List<CaseVersion> getAllVersions(String caseId) throws Exception;
 
     /**
      * 医生通过 idCard + icdCode 查询版本哈希（链上）

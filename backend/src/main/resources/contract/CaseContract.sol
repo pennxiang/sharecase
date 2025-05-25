@@ -1,87 +1,84 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-/// @title 病例版本管理合约
+/// @title 去中心化病例共享合约
 /// @author Penn
-/// @notice 管理病例的版本记录，支持版本新增与版本查询
 contract CaseContract {
 
-    struct CaseVersion {
-        string versionCode;
-        string ipfsHash;
-        address editor;
-        uint256 timestamp;
+    /// @notice 病例记录结构体
+    struct CaseRecord {
+        string caseId;       // 业务标识，用于区分病例（如 UUID）
+        string icdCode;      // 病种编码（ICD-10）
+        string ipfsHash;     // IPFS 地址，指向病例PDF
+        address patient;     // 患者地址（数据归属人）
+        address doctor;      // 填写人（医生地址）
+        uint256 visitTime;   // 就诊时间（Unix时间戳）
     }
 
-    // 病例ID => 所有版本数组
-    mapping(string => CaseVersion[]) private caseVersions;
+    /// @notice 存储每位患者的所有病例记录
+    mapping(address => CaseRecord[]) private records;
 
-    // 所有病例ID（去重记录）
-    string[] private allCaseIds;
+    /// @notice 添加病例成功的事件
+    event CaseAdded(
+        string caseId,
+        string icdCode,
+        string ipfsHash,
+        address indexed patient,
+        address indexed doctor,
+        uint256 visitTime
+    );
 
-    // 记录是否已存在某个病例ID
-    mapping(string => bool) private caseIdExists;
-
-    event VersionAdded(string caseId, string versionCode, address indexed editor);
-
-    /// 添加新版本
-    function addVersion(
+    /// @notice 医生为患者添加病例（记录写链）
+    /// @param caseId 业务上的病例ID（可由后端生成 UUID）
+    /// @param icdCode ICD编码，如 I10、E11
+    /// @param ipfsHash 病历文件的 IPFS 地址
+    /// @param patient 患者地址
+    function addCase(
         string memory caseId,
-        string memory versionCode,
-        string memory ipfsHash
-    ) public {
-        if (!caseIdExists[caseId]) {
-            allCaseIds.push(caseId);
-            caseIdExists[caseId] = true;
-        }
-
-        CaseVersion memory version = CaseVersion(versionCode, ipfsHash, msg.sender, block.timestamp);
-        caseVersions[caseId].push(version);
-        emit VersionAdded(caseId, versionCode, msg.sender);
-    }
-
-    /// 获取版本数量
-    function getVersionCount(string memory caseId) public view returns (uint256) {
-        return caseVersions[caseId].length;
-    }
-
-    /// 获取指定版本
-    function getVersion(string memory caseId, uint index) public view returns (
-        string memory versionCode,
+        string memory icdCode,
         string memory ipfsHash,
-        address editor,
-        uint256 timestamp
+        address patient
+    ) public {
+        CaseRecord memory record = CaseRecord({
+            caseId: caseId,
+            icdCode: icdCode,
+            ipfsHash: ipfsHash,
+            patient: patient,
+            doctor: msg.sender,
+            visitTime: block.timestamp
+        });
+
+        records[patient].push(record);
+
+        emit CaseAdded(caseId, icdCode, ipfsHash, patient, msg.sender, block.timestamp);
+    }
+
+    /// @notice 获取某个患者的病例总数
+    function getCaseCount(address patient) public view returns (uint256) {
+        return records[patient].length;
+    }
+
+    /// @notice 获取某个患者的第 index 条病例
+    function getCase(address patient, uint index) public view returns (
+        string memory caseId,
+        string memory icdCode,
+        string memory ipfsHash,
+        address doctor,
+        uint256 visitTime
     ) {
-        CaseVersion memory v = caseVersions[caseId][index];
-        return (v.versionCode, v.ipfsHash, v.editor, v.timestamp);
+        require(index < records[patient].length, "Index out of range");
+
+        CaseRecord memory r = records[patient][index];
+        return (r.caseId, r.icdCode, r.ipfsHash, r.doctor, r.visitTime);
     }
 
-    /// 获取指定病例的所有版本号
-    function getVersionCodesByCaseId(string memory caseId) public view returns (string[] memory) {
-        uint len = caseVersions[caseId].length;
-        string[] memory result = new string[](len);
-        for (uint i = 0; i < len; i++) {
-            result[i] = caseVersions[caseId][i].versionCode;
+    /// @notice 获取某个患者的所有 IPFS 地址（简化版本）
+    function getIpfsHashes(address patient) public view returns (string[] memory) {
+        uint256 count = records[patient].length;
+        string[] memory hashes = new string[](count);
+        for (uint i = 0; i < count; i++) {
+            hashes[i] = records[patient][i].ipfsHash;
         }
-        return result;
-    }
-
-    /// 获取所有病例的所有版本号（不需要传 caseId）
-    function getAllVersionCodes() public view returns (string[] memory) {
-        uint total = 0;
-        for (uint i = 0; i < allCaseIds.length; i++) {
-            total += caseVersions[allCaseIds[i]].length;
-        }
-
-        string[] memory allCodes = new string[](total);
-        uint k = 0;
-        for (uint i = 0; i < allCaseIds.length; i++) {
-            string memory id = allCaseIds[i];
-            for (uint j = 0; j < caseVersions[id].length; j++) {
-                allCodes[k++] = caseVersions[id][j].versionCode;
-            }
-        }
-
-        return allCodes;
+        return hashes;
     }
 }

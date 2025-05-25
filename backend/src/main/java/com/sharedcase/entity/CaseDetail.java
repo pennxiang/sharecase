@@ -1,14 +1,8 @@
 package com.sharedcase.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * ClassName: caseDetail
@@ -20,55 +14,28 @@ import java.util.List;
  * @create 2025/5/19 13:43
  */
 @Data
-@TableName("case_detail")
 public class CaseDetail {
 
-    @TableId(type = IdType.AUTO)
-    private Long id;
+    // 基础链上字段
+    private String caseId;          // UUID 或雪花 ID，前端生成或后端生成
+    private String icdCode;         // 病种编码（如 I10）
+    private String ipfsHash;        // 后端上传后赋值
+    private String patientAddress;  // 链上患者地址
+    private String doctorAddress;   // 当前医生地址（链上 msg.sender）
 
-    /** 病例ID */
-    private String caseId;
+    // 内容字段（用于生成 PDF，前端填写）
+    private String title;           // 病例标题
+    private String chiefComplaint;  // 主诉
+    private String presentIllness;  // 现病史
+    private String pastHistory;     // 既往史
+    private String diagnosis;       // 医生诊断
+    private String doctorAdvice;    // 医嘱建议
+    private String hospitalAddress;
 
-    /** 病例标题 */
-    private String title;
-
-    /** 关联 ICD 编码 */
-    private String icdCode;
-
-    /** 所属医院ID */
-    private Long hospitalId;
-
-    /** 用户ID（患者） */
-    private Long userId;
-
-    /** 医生ID */
-    private Long doctorId;
-
-    /** 病人自述症状 */
-    private String chiefComplaint;
-
-    /** 现病史 */
-    private String presentIllnessHistory;
-
-    /** 既往史 */
-    private String pastHistory;
-
-    /** 初步诊断 */
-    private String diagnosis;
-
-    /** 医生建议 */
-    private String doctorAdvice;
-
-    /** 是否为复查 **/
-    private String isRecheck;
-
-    /** 检查报告ipfs地址 */
+    // 生成时间
+    private LocalDateTime visitTime;
+}
+    /*
     @TableField(typeHandler = JacksonTypeHandler.class)
     private List<String> infoAttachments;
-
-    /** 填写时间 */
-    private LocalDateTime createTime;
-
-    /** 更新时间 */
-    private LocalDateTime updateTime;
-}
+    */
