@@ -27,12 +27,12 @@ public class PdfUtil {
 
     /**
      * 导出病例详情为PDF
-     * @param caseDetail
+     * @param aCaseDetail
      * @param outputPath
      * @throws Exception
      */
-    public static void exportCaseDetailToPdf(CaseDetail caseDetail, String outputPath) throws Exception {
-        String html = buildHtml(caseDetail);
+    public static void exportCaseDetailToPdf(CaseDetail aCaseDetail, String outputPath) throws Exception {
+        String html = buildHtml(aCaseDetail);
 
         try (OutputStream os = new FileOutputStream(outputPath)) {
             PdfRendererBuilder builder = new PdfRendererBuilder();
@@ -43,53 +43,79 @@ public class PdfUtil {
         }
     }
 
-    private static String buildHtml(CaseDetail caseDetail) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    public static File exportCaseDetailToPdf(CaseDetail caseDetail) throws Exception {
+        String html = buildHtml(caseDetail);
 
+        // 创建临时文件（自动带后缀，JVM退出时自动删除）
+//        File tempPdf = File.createTempFile("case_", ".pdf");
+        File tempPdf = new File("case_" + caseDetail.getCaseId() + ".pdf");
+
+        try (OutputStream os = new FileOutputStream(tempPdf)) {
+            PdfRendererBuilder builder = new PdfRendererBuilder();
+
+            // 注册中文字体
+            builder.useFont(
+                    new File("D:\\Projects\\lessonprojects\\sharedcase\\backend\\src\\main\\resources\\fonts\\NotoSerifCJKsc-VF.ttf"),
+                    "SimSun"
+            );
+            builder.useDefaultPageSize(210, 297, PdfRendererBuilder.PageSizeUnits.MM);
+            builder.withHtmlContent(html, null);
+            builder.toStream(os);
+            builder.run();
+        }
+
+        return tempPdf;
+    }
+
+
+    private static String buildHtml(CaseDetail aCaseDetail) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         return """
                 <html>
                 <head>
-                    <meta charset='UTF-8'>
+                    <meta charset='UTF-8' />
                     <style>
-                        body { font-family: sans-serif; line-height: 1.5; padding: 20px; }
+                        body {
+                            font-family: "SimSun", serif;
+                            line-height: 1.6;
+                            padding: 20px;
+                            font-size: 14px;
+                        }
                         h1 { text-align: center; }
                         p { margin: 6px 0; }
                         .label { font-weight: bold; }
                     </style>
+                
                 </head>
                 <body>
                     <h1>病例信息</h1>
                     <p><span class='label'>病例ID：</span>%s</p>
                     <p><span class='label'>标题：</span>%s</p>
                     <p><span class='label'>ICD编码：</span>%s</p>
-                    <p><span class='label'>医院ID：</span>%d</p>
-                    <p><span class='label'>用户ID：</span>%d</p>
-                    <p><span class='label'>医生ID：</span>%d</p>
+                    <p><span class='label'>医院ID：</span>%s</p>
+                    <p><span class='label'>病人ID：</span>%s</p>
+                    <p><span class='label'>医生ID：</span>%s</p>
                     <p><span class='label'>主诉：</span>%s</p>
                     <p><span class='label'>现病史：</span>%s</p>
                     <p><span class='label'>既往史：</span>%s</p>
                     <p><span class='label'>初步诊断：</span>%s</p>
                     <p><span class='label'>医生建议：</span>%s</p>
-                    <p><span class='label'>复查结果：</span>%s</p>
                     <p><span class='label'>创建时间：</span>%s</p>
-                    <p><span class='label'>更新时间：</span>%s</p>
                 </body>
                 </html>
                 """.formatted(
-                caseDetail.getCaseId(),
-                caseDetail.getTitle(),
-                caseDetail.getIcdCode(),
-                caseDetail.getHospitalId(),
-                caseDetail.getUserId(),
-                caseDetail.getDoctorId(),
-                caseDetail.getChiefComplaint(),
-                caseDetail.getPresentIllnessHistory(),
-                caseDetail.getPastHistory(),
-                caseDetail.getDiagnosis(),
-                caseDetail.getDoctorAdvice(),
-                caseDetail.getIsRecheck(),
-                caseDetail.getCreateTime() != null ? caseDetail.getCreateTime().format(formatter) : "",
-                caseDetail.getUpdateTime() != null ? caseDetail.getUpdateTime().format(formatter) : ""
+                aCaseDetail.getCaseId(),
+                aCaseDetail.getTitle(),
+                aCaseDetail.getIcdCode(),
+                aCaseDetail.getHospitalAddress(),
+                aCaseDetail.getPatientAddress(),
+                aCaseDetail.getDoctorAddress(),
+                aCaseDetail.getChiefComplaint(),
+                aCaseDetail.getPresentIllness(),
+                aCaseDetail.getPastHistory(),
+                aCaseDetail.getDiagnosis(),
+                aCaseDetail.getDoctorAdvice(),
+                aCaseDetail.getVisitTime() != null ? aCaseDetail.getVisitTime().format(formatter) : ""
         );
     }
 
@@ -99,48 +125,44 @@ public class PdfUtil {
      * @return
      * @throws Exception
      */
-
+// 解析PDF为病例详情
     public static CaseDetail parsePdfToCaseDetail(File pdfFile) throws Exception {
         try (PDDocument document = Loader.loadPDF(pdfFile)) {
             PDFTextStripper stripper = new PDFTextStripper();
             String text = stripper.getText(document);
-
-            CaseDetail detail = new CaseDetail();
             Map<String, String> map = extractFields(text);
-
+            CaseDetail detail = new CaseDetail();
             detail.setCaseId(map.get("病例ID"));
             detail.setTitle(map.get("标题"));
             detail.setIcdCode(map.get("ICD编码"));
-            detail.setHospitalId(Long.parseLong(map.get("医院ID")));
-            detail.setUserId(Long.parseLong(map.get("用户ID")));
-            detail.setDoctorId(Long.parseLong(map.get("医生ID")));
+            detail.setHospitalAddress(map.get("医院地址"));
+            detail.setPatientAddress(map.get("病人地址"));
+            detail.setDoctorAddress(map.get("医生地址"));
             detail.setChiefComplaint(map.get("主诉"));
-            detail.setPresentIllnessHistory(map.get("现病史"));
+            detail.setPresentIllness(map.get("现病史"));
             detail.setPastHistory(map.get("既往史"));
             detail.setDiagnosis(map.get("初步诊断"));
             detail.setDoctorAdvice(map.get("医生建议"));
-            detail.setIsRecheck(map.get("是否复查"));
-
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-            detail.setCreateTime(LocalDateTime.parse(map.get("创建时间"), formatter));
-            detail.setUpdateTime(LocalDateTime.parse(map.get("更新时间"), formatter));
-
+            String visitTime = map.get("创建时间");
+            if (visitTime != null) {
+                detail.setVisitTime(LocalDateTime.parse(visitTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+            }
             return detail;
         }
     }
 
     private static Map<String, String> extractFields(String text) {
-        Map<String, String> result = new HashMap<>();
-        String[] lines = text.split("\n");
+        Map<String, String> map = new HashMap<>();
+        String[] lines = text.split("\r?\n");
         for (String line : lines) {
-            int sep = line.indexOf("：");
-            if (sep > 0) {
-                String key = line.substring(0, sep).trim();
-                String value = line.substring(sep + 1).trim();
-                result.put(key, value);
+            int idx = line.indexOf("：");
+            if (idx > 0) {
+                String key = line.substring(0, idx).trim();
+                String value = line.substring(idx + 1).trim();
+                map.put(key, value);
             }
         }
-        return result;
+        return map;
     }
 
 }
