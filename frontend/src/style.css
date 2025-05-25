@@ -1,11 +1,16 @@
 :root {
+  --hospital-primary: #007BFF;
+  --hospital-secondary: #F8F9FA;
+  --hospital-text: #333333;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: var(--hospital-text); /* 使用医院风格颜色变量 */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -67,8 +72,15 @@ button:focus-visible {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+  --hospital-primary: #007BFF;
+  --hospital-secondary: #F8F9FA;
+  --hospital-text: #333333;
+    color: var(--hospital-text); /* 使用医院风格颜色变量 */
+    /* 替换为用户指定的背景图 */
+  background-image: url('/public/homepage-back.jpg'); /* 假设背景图放在public目录下 */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
   }
   a:hover {
     color: #747bff;

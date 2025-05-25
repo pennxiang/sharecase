@@ -2,7 +2,8 @@
   <div class="login-container">
     <el-card class="login-card">
       <template #header>
-        <h2>登录</h2>
+        <h2><img src="../assets/logo.jpg" style="width: 50px;position: relative; top: 13px;right: 6px">
+          登录系统</h2>
       </template>
       
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
@@ -78,10 +79,10 @@ const handleLogin = async () => {
 .login-container {
   height: 100vh;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
-  background-color: #f5f7fa;
-  padding: 20px; /* 兼容小屏 */
+  /* background-color: #f5f7fa; */
+  padding: 20px 80px; /* 兼容小屏，右侧增加内边距 */
 }
 
 .login-card {
@@ -90,6 +91,7 @@ const handleLogin = async () => {
   font-size: 16px;          /* ✅ 放大整体文字 */
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* ✅ 加点阴影更美观 */
   border-radius: 8px;
+  opacity: 0.9; /* 设置登录框透明度为 0.8，数值范围 0 到 1，越接近 0 越透明 */
 }
 
 .el-form-item {
@@ -112,4 +114,4 @@ const handleLogin = async () => {
   margin-left: 0;
 }
 
-</style> 
+</style>
