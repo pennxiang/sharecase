@@ -1,8 +1,6 @@
 package com.sharedcase.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 
@@ -38,6 +36,7 @@ public class User {
     /**
      * 身份证号，加密存储
      */
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     private String idCard;
 
     /**
@@ -53,6 +52,7 @@ public class User {
     /**
      * 链上地址
      */
+    @TableField(updateStrategy = FieldStrategy.NOT_NULL)
     private String chainAddress;
 
     /**

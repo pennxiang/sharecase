@@ -12,7 +12,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @DS("master")
 public class SharedcaseApplication {
     public static void main(String[] args) {
-        System.out.println("启动配置读取成功");
         SpringApplication.run(SharedcaseApplication.class, args);
     }
 

@@ -92,13 +92,21 @@ public class FiscoUtil {
      */
     public <T extends Contract> T loadContract(Class<T> clazz, String address, Client client, CryptoKeyPair keyPair) {
         try {
+            // 检查传入地址是否是字符串格式的 0x 开头的地址
+            if (!address.startsWith("0x") || address.length() != 42) {
+                throw new IllegalArgumentException("合约地址格式错误，必须是以 0x 开头的 42 位十六进制地址：" + address);
+            }
+
             Method loadMethod = clazz.getMethod("load", String.class, Client.class, CryptoKeyPair.class);
+
             @SuppressWarnings("unchecked")
             T contract = (T) loadMethod.invoke(null, address, client, keyPair);
+
             return contract;
         } catch (Exception e) {
             logger.error("加载合约失败：{}", e.getMessage(), e);
             throw new RuntimeException("合约加载失败: " + clazz.getSimpleName(), e);
         }
     }
+
 }

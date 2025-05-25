@@ -1,3 +1,8 @@
+# web服务设置
+server:
+  port: 8888
+  context-path: /
+
 # DateSource
 spring:
   datasource:
@@ -35,6 +40,7 @@ mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
 
+# ipfs 配置
 ipfs:
   url: http://127.0.0.1:5001
   multiAddr: /ip4/127.0.0.1/tcp/5001
@@ -46,14 +52,13 @@ fisco:
   sdkConfigPath: D:\Projects\lessonprojects\sharedcase\backend\src\main\resources\sdk\config.toml
   contract:
     addresses:
-      UserRegistry: "0xabc...123"
-      CaseContract: "0xdef...456"
-      DoctorRegistry: "0xghi...789"
-      ICDRegistry: "0xjkl...000"
+      userRegistry: "0xd24180cc0fef2f3e545de4f9aafc09345cd08903"
+      caseContract: "0x37a44585bf1e9618fdb4c62c4c96189a07dd4b48"
 
 
 contract:
   case:
 
+# 是否开启swagger
 swagger:
   enabled: true

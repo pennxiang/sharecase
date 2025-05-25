@@ -1,14 +1,22 @@
 package com.sharedcase.service.impl;
 
+import com.UserRegistry;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sharedcase.config.ContractConfig;
 import com.sharedcase.dao.UserMapper;
-import com.sharedcase.entity.AjaxResult;
 import com.sharedcase.entity.User;
 import com.sharedcase.service.UserService;
 import com.sharedcase.util.AESUtil;
+import com.sharedcase.util.FiscoUtil;
+import com.sharedcase.util.HashUtil;
+import org.fisco.bcos.sdk.v3.BcosSDK;
+import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.logging.Logger;
 
 /**
  * ClassName: UserServiceImpl
@@ -22,21 +30,44 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
-    @Autowired
-    private UserMapper userMapper;
+    private static final Logger logger = Logger.getLogger(UserServiceImpl.class.getName());
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private FiscoUtil fiscoUtil;
+
+    @Autowired
+    private ContractConfig contractConfig;
 
     @Override
     public User register(User user) {
         try {
             // 1. 对身份证号加密后查重
             String encryptedIdCard = AESUtil.encrypt(user.getIdCard());
-            boolean exists = lambdaQuery()
-                    .eq(User::getIdCard, encryptedIdCard)
-                    .exists();
+            String idCardHash = HashUtil.sha256(user.getIdCard());
 
+            // 加载注册合约
+            String contractAddress = contractConfig.getAddress("userRegistry");
+
+            BcosSDK bcosSDK = fiscoUtil.bcosSDK();
+            Client client = fiscoUtil.fiscoClient(bcosSDK);
+            CryptoKeyPair keyPair = fiscoUtil.cryptoKeyPair(client);
+            UserRegistry userRegistry = fiscoUtil.loadContract(
+                    UserRegistry.class,
+                    contractAddress,
+                    client,
+                    keyPair
+            );
+            System.out.println("UserRegistry address: " + contractAddress);
+            System.out.println("Client group: " + client.getGroup()); // 确保是 group0
+            logger.info("Caller address: " + keyPair.getAddress()); // 确保和部署者一致
+
+            // 查看是否已经注册
+            logger.info("开始调用 isRegistered...");
+            boolean exists = userRegistry.isRegistered(idCardHash);
+            logger.info("调用成功：" + exists);
             if (exists) {
                 throw new RuntimeException("该用户已经被注册");
             }
@@ -47,24 +78,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
             // 3. 设置加密身份证号字段，原字段设 null（防止误存明文）
             user.setIdCard(encryptedIdCard);
-
-
-
-            // 5. 上链处理（例如存身份证哈希值 + 用户地址）
-//            String userHash = HashUtil.sha256(user.getIdCard() + "_salt"); // salt 可全局配置或 per-user 随机
-//            String chainAddress = caseContractService.registerUser(userHash); // 返回链上地址或 hash
-
-//            user.setChainAddress(chainAddress);
-//            this.updateById(user); // 更新链地址字段
+            user.setChainAddress(null); // 先置空，后面写入
 
             // 4. 写入数据库
             this.save(user);
+
+            // 5. 上链处理（存身份证哈希值 + 加密身份证号）
+            userRegistry.register(idCardHash, encryptedIdCard);
+            String chainAddress = userRegistry.getRegistrant(idCardHash);
+
+            // 6. 回写链上地址
+            user.setChainAddress(chainAddress);
+            this.updateById(user);
+
             return user;
 
         } catch (Exception e) {
             throw new RuntimeException("用户注册失败: " + e.getMessage(), e);
         }
     }
+
 
 
     @Override
@@ -134,8 +167,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setWorkId(user.getWorkId());
         }
 
-        // ⚠️ 不允许更新 idCard（防止密文被覆盖）
-        // ⚠️ 不允许更新角色、链上地址等敏感信息
+        // 禁止更改身份证和链上地址
+        user.setIdCard(null);
+        user.setChainAddress(null);
 
         return this.updateById(user);
     }

@@ -1,5 +1,6 @@
 package com.sharedcase.controller;
 
+import com.UserRegistry;
 import com.sharedcase.DTO.UserDTO;
 import com.sharedcase.entity.AjaxResult;
 import com.sharedcase.entity.User;
@@ -30,12 +31,18 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+
     @Operation(summary = "注册账号")
     @PostMapping("/register")
     public AjaxResult register(@RequestBody User user) {
-        User created = userService.register(user);
-        return AjaxResult.success("注册成功", created);
+        try {
+            User created = userService.register(user);
+            return AjaxResult.success("注册成功", created);
+        } catch (Exception e) {
+            return AjaxResult.error("注册失败: " + e.getMessage());
+        }
     }
+
 
     @Operation(summary = "登录账号")
     @PostMapping("/login")
@@ -80,7 +87,6 @@ public class UserController {
         }
     }
 
-
     @Operation(summary = "根据id查用户")
     @GetMapping("/{id}")
     public AjaxResult findById(@PathVariable Long id) {
@@ -88,10 +94,13 @@ public class UserController {
         if (user == null) {
             return AjaxResult.error("用户不存在");
         }
+        // 身份信息脱敏
+        String idCard = DesensitizeUtil.maskIdCard(user.getIdCard());
         String phone = DesensitizeUtil.maskPhone(user.getPhone());
+        // 封装返回对象
         UserDTO userDTO = new UserDTO();
         userDTO.setPhone(phone);
-        userDTO.setIdCard(user.getIdCard());
+        userDTO.setIdCard(idCard);
         userDTO.setName(user.getName());
         userDTO.setWorkId(user.getWorkId());
         return AjaxResult.success(userDTO);
