@@ -40,8 +40,17 @@ ipfs:
   multiAddr: /ip4/127.0.0.1/tcp/5001
   gateway: https://ipfs.io/ipfs/
 
+#  FISCO-BCOS
 fisco:
-  sdkConfigPath: classpath:sdk/config.toml
+  # FISCO-BCOS SDK配置文件路径, 文件系统的绝对路径
+  sdkConfigPath: D:\Projects\lessonprojects\sharedcase\backend\src\main\resources\sdk\config.toml
+  contract:
+    addresses:
+      UserRegistry: "0xabc...123"
+      CaseContract: "0xdef...456"
+      DoctorRegistry: "0xghi...789"
+      ICDRegistry: "0xjkl...000"
+
 
 contract:
   case:

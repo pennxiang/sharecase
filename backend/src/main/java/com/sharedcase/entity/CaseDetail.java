@@ -1,17 +1,20 @@
 package com.sharedcase.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * ClassName: caseDetail
  * Package: com.sharedcase.entity
  * Description:
- *      病例基础信息（链下）
+ *      病例详细信息（ipfs）
  * @author 向鹏
  * @version 1.0
  * @create 2025/5/19 13:43
@@ -56,8 +59,12 @@ public class CaseDetail {
     /** 医生建议 */
     private String doctorAdvice;
 
-    /** 复查结果 */
-    private String recheckResult;
+    /** 是否为复查 **/
+    private String isRecheck;
+
+    /** 检查报告ipfs地址 */
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<String> infoAttachments;
 
     /** 填写时间 */
     private LocalDateTime createTime;

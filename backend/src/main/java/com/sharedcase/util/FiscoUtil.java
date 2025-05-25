@@ -1,5 +1,6 @@
 package com.sharedcase.util;
 
+import com.sharedcase.config.ContractConfig;
 import org.fisco.bcos.sdk.v3.BcosSDK;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.config.exceptions.ConfigException;
@@ -7,10 +8,16 @@ import org.fisco.bcos.sdk.v3.contract.Contract;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * ClassName: FiscoUtil
@@ -21,12 +28,21 @@ import java.lang.reflect.Method;
  * @version 1.0
  * @create 2025/5/19 11:48
  */
+@Component
 public class FiscoUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(FiscoUtil.class);
 
     @Value("${fisco.sdkConfigPath}")
     private String sdkConfigPath;
+
+    // 注入合约地址 map
+    @Autowired
+    private ContractConfig contractConfig;
+
+    public String contractAddresses(String contractName) {
+        return contractConfig.getAddresses().get(contractName);
+    };
 
 
     /**
@@ -61,6 +77,14 @@ public class FiscoUtil {
         CryptoKeyPair keyPair = fiscoClient.getCryptoSuite().getCryptoKeyPair();
         logger.info("获取密钥对，地址：{}", keyPair.getAddress());
         return keyPair;
+    }
+
+    /**
+     * 获取合约地址
+     */
+    public String contractAddress(String contractName) {
+        return Optional.ofNullable(contractConfig.getAddresses().get(contractName))
+                .orElseThrow(() -> new RuntimeException("未配置合约地址: " + contractName));
     }
 
     /**
