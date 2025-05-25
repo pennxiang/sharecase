@@ -1,10 +1,14 @@
-<script setup lang="ts">
-// import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <router-view></router-view>
+  <DefaultLayout />
 </template>
+
+<script setup lang="ts">
+import DefaultLayout from '@/layouts/DefaultLayout.vue'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+userStore.loadFromStorage()
+</script>
 
 <style>
 html, body {

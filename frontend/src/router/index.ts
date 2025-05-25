@@ -4,58 +4,50 @@ const router = createRouter({
     history: createWebHistory(),
     routes: [
         {
-            path: '/',
-            // redirect: '/login' // 实际开发
-            redirect: '/dashboard/cases' //直接到界面，测试
+            path: '/auth',
+            name: '登录注册',
+            component: () => import('@/views/Auth.vue')
         },
         {
-            path: '/login',
-            name: 'Login',
-            component: () => import('../views/Login.vue')
+            path: '/cases/patient',
+            name: '病例查询',
+            component: () => import('../views/CaseListByPatient.vue')
         },
         {
-            path: '/register',
-            name: 'Register',
-            component: () => import('../views/Register.vue')
+            path: '/cases/stat',
+            name: '病发统计',
+            component: () => import('@/views/IcdStatOverview.vue')
         },
         {
-            path: '/dashboard',
-            name: 'Dashboard',
-            component: () => import('../views/Dashboard.vue'),
-            // meta: { requiresAuth: true },
-            children: [
-                {
-                    path: 'cases',
-                    name: 'Cases',
-                    component: () => import('../views/cases/CaseList.vue')
-                },
-                {
-                    path: 'case/create',
-                    name: 'CreateCase',
-                    component: () => import('../views/cases/CreateCase.vue')
-                },
-                {
-                    path: 'case/:id',
-                    name: 'CaseDetail',
-                    component: () => import('../views/cases/CaseDetail.vue')
-                },
-                {
-                    path: 'case/history/:id',
-                    name: 'CaseHistory',
-                    component: () => import('../views/cases/CaseHistory.vue')
-                },
-                {
-                    path: 'statistics',
-                    name: 'Statistics',
-                    component: () => import('../views/Statistics.vue')
-                },
-                {
-                    path: 'profile',
-                    name: 'Profile',
-                    component: () => import('../views/Profile.vue')
-                }
-            ]
+            path: '/cases/create',
+            name: '创建病例',
+            component: () => import('@/views/CaseCreate.vue')
+        },
+        {
+            path: '/patient/icd-stat',
+            name: '我的icd',
+            component: () => import('@/views/PatientIcdStats.vue')
+        },
+        {
+            path: '/cases/patient/compare',
+            name: '病例对比',
+            component: () => import('@/views/PdfCompare.vue')
+        },
+        {
+            path: '/cases/time',
+            name: '全平台病例',
+            component: () => import('@/views/GlobalCaseList.vue')
+        },
+        {
+            path: '/cases/patient/by-icd',
+            name: '按疾病查看',
+            component: () => import('@/views/CaseFilterByIcd.vue')
         }
+
+
+
+
+
     ]
 })
 

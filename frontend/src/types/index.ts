@@ -5,8 +5,10 @@ export interface User {
   name: string;
   phone: string;
   idCard: string;
-  workId?: string;
   password?: string;
+  workId?: string;
+  chainAddress?: string;
+  role?: string;
 }
 
 export interface UserDTO {
@@ -16,29 +18,31 @@ export interface UserDTO {
   workId?: string;
 }
 
-export interface CaseDetail {
-  id?: number;
-  patientId: number;
-  doctorId: number;
+export interface CaseInfo {
+  caseId: string;
   icdCode: string;
-  diagnosis: string;
-  treatment: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface CaseVersion {
-  id?: number;
-  caseId: number;
-  version: number;
   ipfsHash: string;
-  createdAt?: string;
+  doctor: string;
+  visitTime: string;  // 后端是 LocalDateTime，建议用字符串
+  doctorAddress: string;
+  patientAddress: string;
+  rawTimestamp: number;
+  pdfUrl?: string;
 }
 
-export interface HotDiseaseDTO {
+export interface CaseDetail extends CaseInfo {
+  title?: string;
+  chiefComplaint?: string;
+  presentIllness?: string;
+  pastHistory?: string;
+  diagnosis?: string;
+  doctorAdvice?: string;
+  hospitalAddress?: string;
+}
+
+export interface IcdFrequency  {
   icdCode: string;
-  count: number;
-  diseaseName: string;
+  frequency: number;
 }
 
 export interface AjaxResult<T = any> {
