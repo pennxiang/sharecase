@@ -1,6 +1,5 @@
 package com.sharedcase.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.sharedcase.config.IpfsConfig;
 import io.ipfs.api.IPFS;
 import io.ipfs.api.MerkleNode;
@@ -55,8 +54,6 @@ public class IpfsService {
 
         return hash.toBase58();
     }
-
-
 
     /**
      * 获取文件

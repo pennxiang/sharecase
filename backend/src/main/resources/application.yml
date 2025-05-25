@@ -15,25 +15,6 @@ spring:
       name: admin
       password: admin123
 
-# TODO
-#    dynamic: # 动态数据源框架
-#      primary: master # 默认数据源
-#      strict: false # 关闭严格模式（找不到指定数据时不报错）
-#      lazy: true # 懒加载，不访问不初始化
-#      datasource:
-#        # 主库
-#        master:
-#          driverClassName: com.mysql.cj.jdbc.Driver
-#          url: jdbc:mysql://localhost:3306/shared_case?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
-#          username: root
-#          password: "xpeng,2202"
-#        # 从库
-#        slave:
-#          driverClassName: com.mysql.cj.jdbc.Driver
-#          url: jdbc:mysql://localhost:3306/hospital?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
-#          username: root
-#          password: "xpeng,2202"
-
 mybatis-plus:
   mapper-locations: class*:mapper/**/*.xml
   type-aliases-package: com.sharedcase.entity

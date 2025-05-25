@@ -292,7 +292,6 @@ public class CaseService {
         return icdCounter;
     }
 
-
     public List<CaseDetail> searchCasesFuzzy(String keyword) throws Exception {
         List<String> allPatients = caseContract.getAllPatients();
         List<CaseDetail> result = new ArrayList<>();
@@ -349,32 +348,4 @@ public class CaseService {
 
         return diff;
     }
-
-
-
-    /*
-    *//**
-     * 根据ipfs hash获取病例信息
-     *//*
-    public CaseDetail getCaseByHash(String ipfsHash) {
-        try {
-            // 从 IPFS 下载文件
-            File pdfFile = IpfsUtil.download(ipfsHash); // 你自己的方法，返回 File
-
-            // 解析 PDF → 构建病例对象
-            CaseDetail aCaseDetail = PdfUtil.parsePdfToCaseDetail(pdfFile);
-
-            // 删除临时文件（更推荐在 download 方法内部设置 deleteOnExit）
-            if (!pdfFile.delete()) {
-                logger.warn("临时文件删除失败：" + pdfFile.getAbsolutePath());
-            }
-
-            return aCaseDetail;
-        } catch (Exception e) {
-            logger.error("解析病例失败，CID: " + ipfsHash, e);
-            throw new RuntimeException("解析病例失败，CID: " + ipfsHash, e);
-        }
-    }*/
-
-
 }
