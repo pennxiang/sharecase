@@ -1,76 +1,48 @@
 <template>
-  <PageWrapper :loading="loading">
-    <template #header>
-      <el-date-picker
-          v-model="timeRange"
-          type="daterange"
-          range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          value-format="YYYY-MM-DDTHH:mm:ss"
-          style="margin-right: 12px"
-      />
-      <el-button type="primary" @click="loadStats">统计</el-button>
-    </template>
-
-    <div v-if="Object.keys(chartData).length">
-      <v-chart :option="chartOption" autoresize style="height: 400px" />
-    </div>
-  </PageWrapper>
+  <el-card>
+    <BarChart :title="'我的ICD分布'" :data="stats" />
+  </el-card>
 </template>
 
 <script setup lang="ts">
-import {computed, ref} from 'vue'
 import { caseApi } from '@/api'
-import { ElMessage } from 'element-plus'
-import PageWrapper from '@/components/PageWrapper.vue'
-import { useUserStore } from '@/stores/user'
-import VChart from 'vue-echarts'
+import { useUserStore } from '@/store/user'
+import BarChart from '@/components/BarChart.vue'
+import { onMounted, ref } from 'vue'
 
+const stats = ref([])
 const userStore = useUserStore()
-const timeRange = ref<[string, string]>([])
-const chartData = ref<Record<string, number>>({})
-const loading = ref(false)
 
-const loadStats = async () => {
-  if (!timeRange.value || timeRange.value.length !== 2) {
-    ElMessage.warning('请选择起止时间')
-    return
-  }
-  loading.value = true
-  try {
-    const res = await caseApi.getPatientIcdStats(userStore.user?.chainAddress!, timeRange.value[0], timeRange.value[1])
-    if (res.code === 0) {
-      chartData.value = res.data || {}
-    } else {
-      ElMessage.error(res.msg)
-    }
-  } catch (e) {
-    ElMessage.error('查询失败')
-  } finally {
-    loading.value = false
+function generateMockPatientIcdStats() {
+  return {
+    I10: 8,
+    E11: 5,
+    J45: 3,
+    C34: 2,
+    K35: 1
   }
 }
 
-const chartOption = computed(() => {
-  return {
-    tooltip: { trigger: 'item' },
-    legend: { orient: 'vertical', left: 'left' },
-    series: [
-      {
-        name: '疾病类型',
-        type: 'pie',
-        radius: '60%',
-        data: Object.entries(chartData.value).map(([name, value]) => ({ name, value })),
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
-          }
-        }
-      }
-    ]
+const loadStats = async () => {
+  if (import.meta.env.DEV) {
+    const mock = generateMockPatientIcdStats()
+    stats.value = Object.entries(mock).map(([code, count]) => ({
+      name: code,
+      value: count
+    }))
+  } else {
+    const res = await caseApi.getPatientIcdStats(
+        userStore.user?.blockchainAddress!,
+        '2020-01-01',
+        '2099-12-31'
+    )
+    if (res.code === 200) {
+      stats.value = Object.entries(res.data).map(
+          ([code, count]) => ({ name: code, value: count })
+      )
+    }
   }
-})
+}
+
+onMounted(loadStats)
 </script>

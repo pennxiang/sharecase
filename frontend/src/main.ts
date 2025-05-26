@@ -6,11 +6,23 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
+import {useUserStore} from "@/store/user";
 
 import './assets/style.css'
 
 const app = createApp(App)
 app.use(createPinia())
+
+const pinia = createPinia()
+app.use(pinia)
+app.use(router)
+
+const userStore = useUserStore()
+
+if (import.meta.env.DEV && !userStore.user) {
+  // mock doctor 登录，可改成 'patient' 看不同效果
+  userStore.mockLogin('doctor')
+}
 
 // 注册所有图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {

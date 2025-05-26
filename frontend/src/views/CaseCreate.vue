@@ -1,146 +1,85 @@
 <template>
-  <PageWrapper :loading="submitting">
-    <el-button type="primary" @click="dialogVisible = true" style="margin-bottom: 20px">
-      填写病例表单
-    </el-button>
+  <div class="case-create-page">
+    <el-card>
+      <el-form :model="form" label-width="120px">
+        <el-form-item label="病例标题" required>
+          <el-input v-model="form.title" />
+        </el-form-item>
 
-    <el-dialog v-model="dialogVisible" title="新增病例" width="800px" top="5vh" :close-on-click-modal="false">
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
-        <el-form-item label="病例标题" prop="title">
-          <el-input v-model="form.title" placeholder="如：高血压初诊病例" />
+        <el-form-item label="ICD 编码" required>
+          <el-input v-model="form.icdCode" />
         </el-form-item>
-        <el-form-item label="ICD 编码" prop="icdCode">
-          <el-input v-model="form.icdCode" placeholder="如：I10" />
+
+        <el-form-item label="患者地址" required>
+          <el-input v-model="form.patient" />
         </el-form-item>
-        <el-form-item label="主诉" prop="chiefComplaint">
-          <el-input v-model="form.chiefComplaint" type="textarea" rows="2" />
+
+        <el-form-item label="主诉症状">
+          <el-input type="textarea" v-model="form.chiefComplaint" />
         </el-form-item>
-        <el-form-item label="现病史" prop="presentIllness">
-          <el-input v-model="form.presentIllness" type="textarea" rows="2" />
+
+        <el-form-item label="初步诊断">
+          <el-input type="textarea" v-model="form.diagnosis" />
         </el-form-item>
-        <el-form-item label="既往史" prop="pastHistory">
-          <el-input v-model="form.pastHistory" type="textarea" rows="2" />
+
+        <el-form-item label="医生建议">
+          <el-input type="textarea" v-model="form.doctorAdvice" />
         </el-form-item>
-        <el-form-item label="初步诊断" prop="diagnosis">
-          <el-input v-model="form.diagnosis" type="textarea" rows="2" />
-        </el-form-item>
-        <el-form-item label="医生建议" prop="doctorAdvice">
-          <el-input v-model="form.doctorAdvice" type="textarea" rows="2" />
-        </el-form-item>
-        <el-form-item label="所属医院" prop="hospitalAddress">
-          <el-input v-model="form.hospitalAddress" />
-        </el-form-item>
-        <el-form-item label="上传报告">
-          <el-upload
-              :show-file-list="false"
-              :http-request="uploadPdf"
-              accept="application/pdf"
-          >
-            <el-button type="primary">选择 PDF 文件</el-button>
-          </el-upload>
-          <span v-if="uploadedFileName" style="margin-left: 10px">{{ uploadedFileName }}</span>
-          <el-button v-if="form.ipfsHash" type="success" link @click="openPreview">
-            预览 PDF
-          </el-button>
+
+        <el-form-item>
+          <el-button @click="goBack">返回</el-button>
+          <el-button type="primary" @click="submit">提交病例</el-button>
         </el-form-item>
       </el-form>
-
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm">提交病例</el-button>
-      </template>
-    </el-dialog>
-  </PageWrapper>
+    </el-card>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { FormInstance, FormRules, UploadRequestOptions } from 'element-plus'
+import { reactive } from 'vue'
 import { ElMessage } from 'element-plus'
-import { useUserStore } from '@/stores/user'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/store/user'
 import { caseApi } from '@/api'
-import type { CaseDetail } from '@/types'
-import PageWrapper from '@/components/PageWrapper.vue'
-import axios from 'axios'
 
-const formRef = ref<FormInstance>()
-const submitting = ref(false)
-const dialogVisible = ref(false)
+const router = useRouter()
 const userStore = useUserStore()
-const uploadedFileName = ref('')
 
-const form = ref<Partial<CaseDetail>>({
+const goBack = () => {
+  router.back()
+}
+
+const form = reactive({
   title: '',
   icdCode: '',
+  patient: '',
   chiefComplaint: '',
-  presentIllness: '',
-  pastHistory: '',
   diagnosis: '',
   doctorAdvice: '',
-  hospitalAddress: '',
-  ipfsHash: ''
+  doctor: userStore.user?.blockchainAddress || '', // 医生地址
+  visitTime: Date.now()
 })
 
-const rules: FormRules = {
-  title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
-  icdCode: [{ required: true, message: '请输入ICD编码', trigger: 'blur' }],
-  chiefComplaint: [{ required: true, message: '请输入主诉', trigger: 'blur' }],
-  diagnosis: [{ required: true, message: '请输入初步诊断', trigger: 'blur' }]
-}
-
-const uploadPdf = async (option: UploadRequestOptions) => {
-  const formData = new FormData()
-  formData.append('file', option.file)
-  uploadedFileName.value = option.file.name
-  try {
-    const res = await axios.post('/api/ipfs/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-    if (res.data.code === 0) {
-      form.value.ipfsHash = res.data.data
-      ElMessage.success('上传成功')
-    } else {
-      ElMessage.error(res.data.msg)
-    }
-  } catch (e) {
-    ElMessage.error('上传失败')
+const submit = async () => {
+  if (!form.title || !form.icdCode || !form.patient) {
+    ElMessage.warning('请填写完整信息')
+    return
   }
-}
 
-const openPreview = () => {
-  const hash = form.value.ipfsHash
-  if (hash) {
-    window.open(`https://ipfs.io/ipfs/${hash}`, '_blank')
+  const res = await caseApi.create(form)
+  if (res.code === 200) {
+    ElMessage.success('病例创建成功')
+    router.push('/cases/time')
+  } else {
+    ElMessage.error(res.msg || '提交失败')
   }
-}
-
-const submitForm = async () => {
-  if (!formRef.value) return
-  await formRef.value.validate(async (valid) => {
-    if (!valid) return
-    if (!form.value.ipfsHash) {
-      ElMessage.warning('请先上传 PDF 检查报告')
-      return
-    }
-    submitting.value = true
-    try {
-      const detail = {
-        ...form.value,
-        patientAddress: userStore.user?.chainAddress || '',
-        doctorAddress: userStore.user?.chainAddress || ''
-      } as CaseDetail
-      const res = await caseApi.createCase(detail)
-      if (res.code === 0) {
-        ElMessage.success('病例提交成功')
-        dialogVisible.value = false
-      } else {
-        ElMessage.error(res.msg)
-      }
-    } catch (e) {
-      ElMessage.error('提交失败')
-    } finally {
-      submitting.value = false
-    }
-  })
 }
 </script>
+
+<style scoped>
+.case-create-page {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+}
+</style>

@@ -1,65 +1,39 @@
 <template>
-  <PageWrapper :loading="loading">
-    <!-- 顶部筛选栏 -->
-    <template #header>
-      <el-date-picker
-          v-model="timeRange"
-          type="datetimerange"
-          value-format="YYYY-MM-DDTHH:mm:ss"
-          start-placeholder="起始时间"
-          end-placeholder="结束时间"
-      />
-      <el-button type="primary" @click="loadStats" style="margin-left: 10px">查询统计</el-button>
-    </template>
-
-    <!-- 表格结果 -->
-    <el-table :data="statList" border>
-      <el-table-column prop="icdCode" label="ICD 编码" />
-      <el-table-column prop="count" label="出现次数" />
-    </el-table>
-  </PageWrapper>
+  <el-card>
+    <BarChart :title="'ICD统计分布'" :data="stats" />
+  </el-card>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { caseApi } from '@/api'
-import PageWrapper from '@/components/PageWrapper.vue'
-import { ElMessage } from 'element-plus'
+import BarChart from '@/components/BarChart.vue'
+import { onMounted, ref } from 'vue'
 
-interface IcdStatRow {
-  icdCode: string
-  count: number
+const stats = ref([])
+
+function generateMockIcdStats() {
+  return [
+    { name: 'I10', value: 32 },
+    { name: 'E11', value: 28 },
+    { name: 'J45', value: 21 },
+    { name: 'C34', value: 17 },
+    { name: 'K35', value: 13 }
+  ]
 }
-
-const timeRange = ref<[Date, Date] | null>(null)
-const statList = ref<IcdStatRow[]>([])
-const loading = ref(false)
 
 const loadStats = async () => {
-  if (!timeRange.value) {
-    ElMessage.warning('请选择时间范围')
-    return
-  }
-
-  const [from, to] = timeRange.value
-  loading.value = true
-  try {
-    const res = await caseApi.getIcdStatsByTimeRange(
-        from.toISOString(),
-        to.toISOString()
-    )
-    if (res.code === 0) {
-      statList.value = Object.entries(res.data || {}).map(([icdCode, count]) => ({
-        icdCode,
-        count: Number(count)
+  if (import.meta.env.DEV) {
+    stats.value = generateMockIcdStats()
+  } else {
+    const res = await caseApi.getGlobalIcdFrequency()
+    if (res.code === 200) {
+      stats.value = res.data.map(i => ({
+        name: i.icdCode,
+        value: i.count
       }))
-    } else {
-      ElMessage.error(res.msg)
     }
-  } catch (e) {
-    ElMessage.error('查询失败')
-  } finally {
-    loading.value = false
   }
 }
+
+onMounted(loadStats)
 </script>
