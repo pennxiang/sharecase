@@ -11,6 +11,7 @@ import jakarta.annotation.PostConstruct;
 import org.fisco.bcos.sdk.v3.BcosSDK;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple5;
+import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple6;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
@@ -24,6 +25,7 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,9 +46,6 @@ public class CaseService {
 
     @Autowired
     private IpfsService ipfsService;
-
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private ContractConfig  contractConfig;
@@ -104,6 +103,51 @@ public class CaseService {
         logger.info("链上写入成功，交易哈希: " + txHash);
         System.out.println("链上写入成功，交易哈希: " + txHash);
     }
+
+    public List<CaseDetail> listAll() {
+        try {
+            Tuple6<List<String>, List<String>, List<String>, List<String>, List<String>, List<BigInteger>> cases =
+                    caseContract.getAllCases();
+
+            List<CaseDetail> result = new ArrayList<>();
+
+            List<String> caseIds = cases.getValue1();
+            List<String> icdCodes = cases.getValue2();
+            List<String> ipfsHashes = cases.getValue3();
+            List<String> patients = cases.getValue4();
+            List<String> doctors = cases.getValue5();
+            List<BigInteger> visitTimes = cases.getValue6();
+
+
+
+            for (int i = 0; i < caseIds.size(); i++) {
+                CaseDetail detail = new CaseDetail();
+                detail.setCaseId(caseIds.get(i));
+                detail.setIcdCode(icdCodes.get(i));
+                detail.setIpfsHash(ipfsHashes.get(i));
+                detail.setPatientAddress(patients.get(i));
+                detail.setDoctorAddress(doctors.get(i));
+
+                // 时间转换
+                BigInteger rawTimestamp = visitTimes.get(i);
+                long ts = rawTimestamp.longValue();
+                if (ts > 9999999999L) { // 超过10位，说明是毫秒，转为秒
+                    ts = ts / 1000;
+                }
+                LocalDateTime visitTime = Instant.ofEpochSecond(ts)
+                        .atZone(ZoneId.of("Asia/Shanghai"))
+                        .toLocalDateTime();
+
+                detail.setVisitTime(visitTime);
+                result.add(detail);
+            }
+
+            return result;
+        } catch (ContractException e) {
+            throw new RuntimeException("链上获取所有病例失败: " + e.getMessage(), e);
+        }
+    }
+
 
     public List<CaseInfo> getCasesByPatient(String patientAddress) throws Exception {
         List<CaseInfo> result = new ArrayList<>();

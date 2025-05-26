@@ -1,6 +1,7 @@
 package com.sharedcase.controller;
 
 import cn.hutool.core.util.IdUtil;
+import com.CaseContract;
 import com.sharedcase.DTO.CaseInfo;
 import com.sharedcase.DTO.IcdFrequency;
 import com.sharedcase.entity.*;
@@ -34,9 +35,6 @@ public class CaseController {
     @Autowired
     private CaseService caseService;
 
-    @Autowired
-    private UserServiceImpl userServiceImpl;
-
 
     /**
      * 创建病例 【医生端】
@@ -59,6 +57,19 @@ public class CaseController {
         }
     }
 
+    @Operation(summary = "获取平台所有病例信息")
+    @GetMapping("/listAll")
+    public AjaxResult listAll() {
+        try {
+            // 调用服务层方法获取所有病例信息
+            List<CaseDetail> cases = caseService.listAll();
+            // 返回成功结果和病例信息列表
+            return AjaxResult.success(cases);
+        } catch (Exception e) {
+            // 如果查询过程中发生异常，返回错误结果和异常信息
+            return AjaxResult.error("查询失败: " + e.getMessage());
+        }
+    }
 
     /**
      * 获取某人的历史病例信息
