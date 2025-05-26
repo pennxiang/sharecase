@@ -33,11 +33,11 @@ public interface UserService extends IService<User> {
     /**
      * 获取用户身份
      */
-    public String getUserRole(String idCard);
+    String getUserRole(String idCard);
 
     /**
      * 更新信息
      */
-    public boolean updateUserInfo(User user);
+    boolean updateUserInfo(User user);
 
 }

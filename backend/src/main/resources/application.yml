@@ -23,7 +23,7 @@ mybatis-plus:
 
 # ipfs 配置
 ipfs:
-  url: http://127.0.0.1:5001
+  url: http://127.0.0.1:8080
   multiAddr: /ip4/127.0.0.1/tcp/5001
   gateway: https://ipfs.io/ipfs/
 

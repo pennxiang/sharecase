@@ -17,12 +17,12 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 
-const userStore = useUserStore()
+// const userStore = useUserStore()
 
-if (import.meta.env.DEV && !userStore.user) {
+/*if (import.meta.env.DEV && !userStore.user) {
   // mock doctor 登录，可改成 'patient' 看不同效果
   userStore.mockLogin('doctor')
-}
+}*/
 
 // 注册所有图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {

@@ -1,5 +1,17 @@
 <template>
   <el-card>
+    <div class="toolbar">
+      <el-date-picker
+          v-model="dateRange"
+          type="daterange"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          style="width: 300px; margin-right: 12px"
+      />
+      <el-button type="primary" @click="loadStats">统计</el-button>
+    </div>
+
     <BarChart :title="'ICD统计分布'" :data="stats" />
   </el-card>
 </template>
@@ -10,6 +22,7 @@ import BarChart from '@/components/BarChart.vue'
 import { onMounted, ref } from 'vue'
 
 const stats = ref([])
+const dateRange = ref<[Date, Date] | null>(null)
 
 function generateMockIcdStats() {
   return [
@@ -24,16 +37,34 @@ function generateMockIcdStats() {
 const loadStats = async () => {
   if (import.meta.env.DEV) {
     stats.value = generateMockIcdStats()
-  } else {
-    const res = await caseApi.getGlobalIcdFrequency()
-    if (res.code === 200) {
-      stats.value = res.data.map(i => ({
-        name: i.icdCode,
-        value: i.count
-      }))
-    }
+    return
+  }
+
+  if (!dateRange.value) return
+  const [from, to] = dateRange.value.map(d => d.toISOString())
+
+  const res = await caseApi.getIcdStatsByTimeRange(from, to)
+  if (res.code === 200) {
+    stats.value = Object.entries(res.data).map(([code, count]) => ({
+      name: code,
+      value: count
+    }))
   }
 }
 
-onMounted(loadStats)
+onMounted(() => {
+  const now = new Date()
+  const oneMonthAgo = new Date()
+  oneMonthAgo.setMonth(now.getMonth() - 1)
+  dateRange.value = [oneMonthAgo, now]
+  loadStats()
+})
 </script>
+
+<style scoped>
+.toolbar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+</style>

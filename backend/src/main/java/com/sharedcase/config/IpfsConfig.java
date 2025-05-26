@@ -2,7 +2,6 @@ package com.sharedcase.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.stereotype.Component;
 
 /**

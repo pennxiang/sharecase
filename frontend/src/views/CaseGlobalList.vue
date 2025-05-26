@@ -8,20 +8,20 @@
           range-separator="至"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
-          style="width: 150px; margin-right: 12px"
+          style="width: 300px; margin-right: 12px"
       />
 
       <!-- 搜索框占满中间空间 -->
       <el-input
           v-model="keyword"
           placeholder="搜索关键词"
-          @keyup.enter="searchCases"
+          @keyup.enter="handleFilter"
           style="flex: 1; margin-right: 12px"
           clearable
       />
 
       <!-- 筛选按钮 -->
-      <el-button type="primary" @click="filterByTime">筛选</el-button>
+      <el-button type="primary" @click="handleFilter">筛选</el-button>
 
       <!-- 创建按钮右对齐 -->
       <el-button
@@ -45,6 +45,13 @@
           {{ formatTime(row.visitTime) }}
         </template>
       </el-table-column>
+      <el-table-column label="操作" width="100">
+        <template #default="{ row }">
+          <el-button type="primary" link @click="viewCase(row)">
+            查看
+          </el-button>
+        </template>
+      </el-table-column>
     </el-table>
 
     <el-pagination
@@ -59,24 +66,27 @@
 </template>
 
 <script setup lang="ts">
-import { caseApi } from '@/api'
-import { useUserStore } from '@/store/user'
-import { format } from 'date-fns'
-import { ElMessage } from 'element-plus'
-import { useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { format } from 'date-fns'
+import { useUserStore } from '@/store/user'
+import { getMyCases } from '@/services/caseApi'
 
 const router = useRouter()
 const userStore = useUserStore()
 const isDoctor = userStore.user?.role === 'doctor'
 
-const cases = ref([])              // 当前页展示数据
-const casesAll = ref([])           // 全部数据（mock 或后端）
-const keyword = ref('')
+const cases = ref([])
 const dateRange = ref<[Date, Date] | null>(null)
-
 const currentPage = ref(1)
 const pageSize = 15
+
+const total = ref(0)
+const cases = ref<any[]>()
+
+const casesAll = ref([])
+const keyword = ref('')
 
 const formatTime = (timestamp: number) =>
     format(new Date(timestamp), 'yyyy-MM-dd HH:mm')
@@ -87,33 +97,13 @@ const paginate = () => {
   cases.value = casesAll.value.slice(start, end)
 }
 
-const searchCases = async () => {
-  if (!keyword.value) {
-    currentPage.value = 1
-    paginate()
+const viewCase = (row: any) => {
+  const hash = row.ipfsHash
+  if (!hash) {
+    ElMessage.warning('该病例未上传 PDF')
     return
   }
-  const res = await caseApi.searchCases(keyword.value)
-  if (res.code === 200) {
-    casesAll.value = res.data
-    currentPage.value = 1
-    paginate()
-  } else {
-    ElMessage.error(res.msg)
-  }
-}
-
-const filterByTime = async () => {
-  if (!dateRange.value) return
-  const [from, to] = dateRange.value.map(d => d.toISOString())
-  const res = await caseApi.getCasesByTimeRange(from, to)
-  if (res.code === 200) {
-    casesAll.value = res.data
-    currentPage.value = 1
-    paginate()
-  } else {
-    ElMessage.error(res.msg)
-  }
+  window.open(`http://127.0.0.1:8080/ipfs/${hash}`, '_blank')
 }
 
 function generateMockCases(count = 100) {
@@ -125,21 +115,38 @@ function generateMockCases(count = 100) {
   for (let i = 1; i <= count; i++) {
     const caseId = `CASE-${i.toString().padStart(3, '0')}`
     const icdCode = icdCodes[Math.floor(Math.random() * icdCodes.length)]
+    const ipfsHash = i === 1 ? 'QmPAWWMGVqjy7oymZXtMjFVi5bGnQ7ekkVMxNwduesnB3X' : null
     const doctor = doctors[Math.floor(Math.random() * doctors.length)]
     const patient = patients[Math.floor(Math.random() * patients.length)]
     const visitTime = new Date(Date.now() - Math.random() * 10000000000).getTime()
-    list.push({ caseId, icdCode, doctor, patient, visitTime })
+    list.push({ caseId, icdCode, ipfsHash, doctor, patient, visitTime })
   }
 
   return list
 }
 
-const loadAllCases = async () => {
-  const res = await caseApi.getCasesByTimeRange('', '')
-  if (res.code === 200) {
-    casesAll.value = res.data
-    paginate()
+const handleFilter = () => {
+  const hasKeyword = keyword.value.trim() !== ''
+  const hasDateRange = !!dateRange.value
+
+  let filtered = generateMockCases(100)
+
+  if (hasDateRange) {
+    const [from, to] = dateRange.value!
+    filtered = filtered.filter(c => c.visitTime >= from.getTime() && c.visitTime <= to.getTime())
   }
+
+  if (hasKeyword) {
+    const kw = keyword.value.trim().toLowerCase()
+    filtered = filtered.filter(c =>
+        c.caseId.toLowerCase().includes(kw) ||
+        c.icdCode.toLowerCase().includes(kw)
+    )
+  }
+
+  casesAll.value = filtered
+  currentPage.value = 1
+  paginate()
 }
 
 onMounted(() => {
@@ -147,7 +154,7 @@ onMounted(() => {
     casesAll.value = generateMockCases(100)
     paginate()
   } else {
-    loadAllCases()
+    // 真实环境按需加载
   }
 })
 </script>

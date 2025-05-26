@@ -49,7 +49,7 @@ public class UserController {
     public AjaxResult login(@RequestParam String loginId, @RequestParam String password) {
         User user = userService.login(loginId, password);
         if (user != null) {
-            return AjaxResult.success("登录成功");
+            return AjaxResult.success("登录成功",user);
         } else {
             return AjaxResult.error("用户名或密码错误");
         }

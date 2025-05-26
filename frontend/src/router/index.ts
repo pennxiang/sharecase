@@ -14,7 +14,7 @@ const routes = [
         children: [
             {
                 path: '',
-                redirect: '/cases/time'  // 默认跳转首页
+                redirect: '/auth'  // 默认跳转首页
             },
             {
                 path: 'cases/time',

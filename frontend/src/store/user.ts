@@ -3,9 +3,13 @@ import type { User } from '@/types'
 
 export interface User {
     id: number
-    loginId: string
+    name: string
+    phone: string
+    idCard: string
+    password: string
+    workId: string
+    chainAddress: string
     role: 'doctor' | 'patient'
-    blockchainAddress: string
 }
 
 export const useUserStore = defineStore('user', {
@@ -18,24 +22,32 @@ export const useUserStore = defineStore('user', {
         },
         logout() {
             this.user = null
-        },
+        },/*
         mockLogin(role: 'doctor' | 'patient') {
             const mockUsers: Record<string, User> = {
                 doctor: {
                     id: 1,
-                    loginId: 'doctor001',
+                    name: 'doctor001',
+                    phone: '12345678901',
+                    idCard: '123456789012345678',
+                    password: 'password',
+                    workId: 'doctor001',
+                    chainAddress: '0xDOCTORADDR',
                     role: 'doctor',
-                    blockchainAddress: '0xDOCTORADDR'
                 },
                 patient: {
                     id: 2,
-                    loginId: 'patient001',
+                    name: 'patient001',
+                    phone: '12345678902',
+                    idCard: '123456789012345679',
+                    password: 'password',
+                    workId: '',
+                    chainAddress: '0xPATIENTADDR',
                     role: 'patient',
-                    blockchainAddress: '0xPATIENTADDR'
                 }
             }
             this.user = mockUsers[role]
-        }
+        }*/
     },
     persist: true // 如果用了 pinia-plugin-persistedstate 插件
 })

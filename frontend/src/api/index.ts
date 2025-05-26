@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { User, CaseDetail, CaseInfo, UserDTO, IcdFrequency, AjaxResult } from '../types';
+import request from "../services/request.ts";
 
 const api = axios.create({
   baseURL: '/api',
@@ -9,6 +10,8 @@ const api = axios.create({
   }
 });
 
+export default request;
+
 // ------------------ 用户模块 ------------------
 export const userApi = {
   // 用户注册
@@ -17,7 +20,7 @@ export const userApi = {
   
   // 用户登录
   login: (loginId: string, password: string) =>
-    api.post<AjaxResult>('/user/login',null, {params: { loginId, password } }),
+    api.post<AjaxResult>('/user/login', {params: { loginId, password } }),
   
   // 根据身份证查询用户
   findByIdCard: (idCard: string) =>
@@ -110,7 +113,7 @@ api.interceptors.request.use(
 // 响应拦截器
 api.interceptors.response.use(
   response => {
-    if (response.data.code === 200) {
+    if (response.data.code === 200 || response.data.code === 0) {
       return response.data;
     } else {
       return Promise.reject(response.data);

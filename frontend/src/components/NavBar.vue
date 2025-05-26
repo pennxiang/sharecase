@@ -32,10 +32,10 @@ const logout = () => {
   router.push('/auth')
 }
 
-const switchUser = (role: 'doctor' | 'patient') => {
+/*const switchUser = (role: 'doctor' | 'patient') => {
   userStore.mockLogin(role)
   location.reload()
-}
+}*/
 
 </script>
 

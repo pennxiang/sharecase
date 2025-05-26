@@ -32,7 +32,7 @@ const loadStats = async () => {
     }))
   } else {
     const res = await caseApi.getPatientIcdStats(
-        userStore.user?.blockchainAddress!,
+        userStore.user?.chainAddress!,
         '2020-01-01',
         '2099-12-31'
     )

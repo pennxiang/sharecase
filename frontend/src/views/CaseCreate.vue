@@ -56,7 +56,7 @@ const form = reactive({
   chiefComplaint: '',
   diagnosis: '',
   doctorAdvice: '',
-  doctor: userStore.user?.blockchainAddress || '', // 医生地址
+  doctor: userStore.user?.chainAddress || '', // 医生地址
   visitTime: Date.now()
 })
 
