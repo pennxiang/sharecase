@@ -1,12 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import Auth from '@/views/Auth.vue'
+import {useUserStore} from "../store/user.ts";
 
 const routes = [
     {
         path: '/auth',
         component: Auth,
         meta: { layout: 'auth' }
+    },
+    {
+        path: '/auth/register',
+        name: '注册',
+        component: () => import('@/views/Register.vue')
     },
     {
         path: '/',
@@ -62,6 +68,24 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes
+})
+
+// 登录白名单
+const whiteList = ['/auth', '/auth/register']
+
+router.beforeEach((to, from, next) => {
+    const userStore = useUserStore()
+    const isLogin = !!userStore.user
+
+    if (whiteList.includes(to.path)) {
+        next()
+    } else {
+        if (isLogin) {
+            next()
+        } else {
+            next('/auth')
+        }
+    }
 })
 
 export default router

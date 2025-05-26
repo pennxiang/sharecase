@@ -41,6 +41,10 @@ export const caseApi = {
   create: (detail: CaseDetail) =>
     api.post<AjaxResult>('/case/create', detail),
 
+  // 获取全平台病例
+  getAllCases: () =>
+    api.get<AjaxResult<CaseInfo[]>>('/case/listAll'),
+
   // 查询某人的所有病例
   getCasesByPatient: (address: string) =>
       api.get<AjaxResult<CaseInfo[]>>('/case/list', {

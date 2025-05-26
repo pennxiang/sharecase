@@ -5,6 +5,7 @@ import com.sharedcase.DTO.CaseInfo;
 import com.sharedcase.DTO.IcdFrequency;
 import com.sharedcase.config.ContractConfig;
 import com.sharedcase.entity.CaseDetail;
+import com.sharedcase.util.CaseDiffUtil;
 import com.sharedcase.util.FiscoUtil;
 import com.sharedcase.util.PdfUtil;
 import jakarta.annotation.PostConstruct;
@@ -367,29 +368,19 @@ public class CaseService {
         return result;
     }
 
-    public Map<String, Object> compareCases(String ipfsHash1, String ipfsHash2) throws Exception {
+    public Map<String, List<String>> compareCases(String ipfsHash1, String ipfsHash2) throws Exception {
         File pdf1 = ipfsService.download(ipfsHash1);
         File pdf2 = ipfsService.download(ipfsHash2);
 
         CaseDetail case1 = PdfUtil.parsePdfToCaseDetail(pdf1);
         CaseDetail case2 = PdfUtil.parsePdfToCaseDetail(pdf2);
 
-        Map<String, Object> diff = new HashMap<>();
-
-        if (!Objects.equals(case1.getDiagnosis(), case2.getDiagnosis())) {
-            diff.put("诊断不同", List.of(case1.getDiagnosis(), case2.getDiagnosis()));
-        }
-        if (!Objects.equals(case1.getDoctorAdvice(), case2.getDoctorAdvice())) {
-            diff.put("医嘱不同", List.of(case1.getDoctorAdvice(), case2.getDoctorAdvice()));
-        }
-        if (!Objects.equals(case1.getPresentIllness(), case2.getPresentIllness())) {
-            diff.put("现病史不同", List.of(case1.getPresentIllness(), case2.getPresentIllness()));
-        }
-        // 可继续扩展字段对比
+        Map<String, List<String>> diff = CaseDiffUtil.compare(case1, case2);
 
         pdf1.delete();
         pdf2.delete();
 
         return diff;
     }
+
 }

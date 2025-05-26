@@ -1,5 +1,6 @@
 <template>
   <div class="navbar">
+    <div class="left-placeholder" /> <!-- 用于撑开左侧空间 -->
     <div class="title">电子病例共享系统</div>
     <div class="actions">
       <el-dropdown>
@@ -9,8 +10,6 @@
         </span>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item @click="switchUser('doctor')">模拟医生</el-dropdown-item>
-            <el-dropdown-item @click="switchUser('patient')">模拟病人</el-dropdown-item>
             <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -31,12 +30,6 @@ const logout = () => {
   userStore.logout()
   router.push('/auth')
 }
-
-/*const switchUser = (role: 'doctor' | 'patient') => {
-  userStore.mockLogin(role)
-  location.reload()
-}*/
-
 </script>
 
 <style scoped>
@@ -44,8 +37,28 @@ const logout = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+  height: 64px;
   padding: 0 20px;
-  background: #fff;
+  background-image: url('/background.jpg');
+  background-size: cover;
+  background-position: center;
+  color: #fff;
   border-bottom: 1px solid #eee;
+}
+
+/* 左右两边撑开空间，使标题居中 */
+.left-placeholder,
+.actions {
+  width: 150px;
+}
+
+.title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  font-weight: bold;
+  color: #000;
 }
 </style>

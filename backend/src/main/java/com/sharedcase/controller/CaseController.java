@@ -293,7 +293,7 @@ public class CaseController {
     public AjaxResult compareCases(@RequestParam String hash1, @RequestParam String hash2) {
         try {
             // 调用服务层方法比较病例差异
-            Map<String, Object> diff = caseService.compareCases(hash1, hash2);
+            Map<String, List<String>> diff = caseService.compareCases(hash1, hash2);
             // 返回成功结果，包含差异信息
             return AjaxResult.success(diff);
         } catch (Exception e) {

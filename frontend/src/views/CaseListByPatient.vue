@@ -18,6 +18,7 @@
     <el-table :data="cases" border style="margin-top: 12px">
       <el-table-column prop="caseId" label="病例 ID" />
       <el-table-column prop="icdCode" label="ICD 编码" />
+      <el-table-column prop="ipfsHash" label="ipfs地址" />
       <el-table-column prop="visitTime" label="就诊时间">
         <template #default="{ row }">
           {{ formatTime(row.visitTime) }}
