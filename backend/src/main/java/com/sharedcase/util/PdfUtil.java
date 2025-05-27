@@ -56,7 +56,7 @@ public class PdfUtil {
 
             // 注册中文字体
             builder.useFont(
-                    new File("D:\\Projects\\lessonprojects\\sharedcase\\backend\\src\\main\\resources\\fonts\\NotoSerifCJKsc-VF.ttf"),
+                    new File(PdfUtil.class.getClassLoader().getResource("fonts/NotoSerifCJKsc-VF.ttf").toURI()),
                     "SimSun"
             );
             builder.useDefaultPageSize(210, 297, PdfRendererBuilder.PageSizeUnits.MM);

@@ -41,7 +41,7 @@ const loadStats = async () => {
 
   try {
     const res = await caseApi.getPatientIcdStats(address, fromStr, toStr)
-    console.log('后端响应:', res)
+    // console.log('后端响应:', res)
     if (res.code === 0 || res.code === 200) {
       stats.value = Object.entries(res.data).map(([code, count]) => ({
         name: code,
@@ -51,7 +51,7 @@ const loadStats = async () => {
       ElMessage.error(res.msg || '统计失败')
     }
   } catch (err) {
-    console.error('统计接口异常:', err)
+    // console.error('统计接口异常:', err)
     ElMessage.error('统计接口异常')
   }
 }

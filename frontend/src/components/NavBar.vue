@@ -5,7 +5,7 @@
     <div class="actions">
       <el-dropdown>
         <span class="el-dropdown-link">
-          {{ userStore.user?.loginId || '用户' }}
+          {{ userStore.user?.name || '未登录' }}
           <el-icon><arrow-down /></el-icon>
         </span>
         <template #dropdown>

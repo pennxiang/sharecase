@@ -58,7 +58,5 @@ public class UserTests {
         user3.setChainAddress("0xInsuranceC");
         user3.setWorkId(3L);
         userMapper.insert(user3);
-
-        System.out.println("✅ 用户测试数据插入完成！");
     }
 }

@@ -74,18 +74,18 @@ public class CaseService {
 //        caseDetail.setVisitTime(LocalDateTime.now());
 
         // 2. 导出 PDF 文件
-        System.out.println("构建PDF...");
+        logger.info("构建PDF...");
         File pdf = PdfUtil.exportCaseDetailToPdf(caseDetail);
 
         // 3. 上传到 IPFS
-        System.out.println("上传到IPFS...");
+        logger.info("上传到IPFS...");
         String ipfsHash = ipfsService.upload(pdf, "/cases/" + caseDetail.getCaseId());
-        System.out.println("上传成功，CID: " + ipfsHash);
+        logger.info("上传成功，CID: " + ipfsHash);
         caseDetail.setIpfsHash(ipfsHash);
 
         // 4. 写入区块链
-        System.out.println("写入区块链...");
-        System.out.println("合约地址: " + caseContract.getContractAddress());
+        logger.info("写入区块链...");
+        logger.info("合约地址: " + caseContract.getContractAddress());
 
         TransactionReceipt transactionReceipt = caseContract.addCase(
                 caseDetail.getCaseId(),
@@ -102,7 +102,6 @@ public class CaseService {
 
         // 5. 可选：返回结果、记录 txHash 日志等
         logger.info("链上写入成功，交易哈希: " + txHash);
-        System.out.println("链上写入成功，交易哈希: " + txHash);
     }
 
     public List<CaseDetail> listAll() {
@@ -167,7 +166,7 @@ public class CaseService {
                     .toLocalDateTime();
 
             // 打印日志
-            System.out.println("【病例】caseId=" + tuple.getValue1()
+            logger.info("【病例】caseId=" + tuple.getValue1()
                     + ", 原始时间戳=" + rawTimestamp
                     + ", 本地时间=" + visitTime);
 

@@ -69,7 +69,7 @@ const loadCases = async () => {
     return
   }
 
-  console.log('当前 address:', address.value)
+  // console.log('当前 address:', address.value)
   try {
     if (dateRange.value) {
       const [from, to] = dateRange.value
@@ -84,7 +84,7 @@ const loadCases = async () => {
       }
     } else {
       const res = await caseApi.getCasesByPatient(address.value)
-      console.log('后端响应结果:', res)
+      // console.log('后端响应结果:', res)
       if (res.code === 0) {
         cases.value = res.data.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize)
         total.value = res.data.length

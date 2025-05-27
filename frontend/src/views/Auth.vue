@@ -47,7 +47,7 @@ const handleLogin = async () => {
   await formRef.value?.validate(async (valid) => {
     if (valid) {
       const res = await login(form.loginId, form.password)
-      console.log('登录结果:', res)
+      // console.log('登录结果:', res)
       if (res.code === 0) {
         userStore.setUser(res.data)  // 这里 data 必须是 user 对象
         ElMessage.success(res.msg)   // ✅ 正确弹出提示

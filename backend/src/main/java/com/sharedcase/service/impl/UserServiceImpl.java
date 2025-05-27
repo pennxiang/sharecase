@@ -60,8 +60,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                     client,
                     keyPair
             );
-            System.out.println("UserRegistry address: " + contractAddress);
-            System.out.println("Client group: " + client.getGroup()); // 确保是 group0
+            logger.info("UserRegistry address: " + contractAddress);
+            logger.info("Client group: " + client.getGroup()); // 确保是 group0
             logger.info("Caller address: " + keyPair.getAddress()); // 确保和部署者一致
 
             // 查看是否已经注册

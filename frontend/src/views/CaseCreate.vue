@@ -89,8 +89,8 @@ const form = reactive({
 })
 
 const submit = async () => {
-  console.log("正在提交病例...",form)
-  console.log('提交内容:', JSON.stringify(form, null, 2))
+  // console.log("正在提交病例...",form)
+  // console.log('提交内容:', JSON.stringify(form, null, 2))
 
   if (!form.title || !form.icdCode || !form.patientAddress) {
     ElMessage.warning('请填写完整信息')
@@ -99,7 +99,7 @@ const submit = async () => {
 
   const res = await caseApi.create(form)
   if (res.code === 0 || res.code === 200) {
-    console.log('接口响应', res)
+    // console.log('接口响应', res)
     ElMessage.success('病例创建成功')
     router.push('/cases/time')
   } else {
