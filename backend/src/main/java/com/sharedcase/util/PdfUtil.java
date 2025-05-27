@@ -55,8 +55,16 @@ public class PdfUtil {
             PdfRendererBuilder builder = new PdfRendererBuilder();
 
             // 注册中文字体
+            /*builder.useFont(
+                    new File("D:\\Projects\\lessonprojects\\sharedcase\\backend\\src\\main\\resources\\fonts\\NotoSerifCJKsc-VF.ttf"),
+                    "SimSun"
+            );*/
+            File fontFile = new File("/home/ubuntu/sharedcase/fonts//NotoSerifCJKsc-VF.ttf");
+            if (!fontFile.exists()) {
+                throw new RuntimeException("字体文件不存在: " + fontFile.getAbsolutePath());
+            }
             builder.useFont(
-                    new File(PdfUtil.class.getClassLoader().getResource("fonts/NotoSerifCJKsc-VF.ttf").toURI()),
+                    fontFile,
                     "SimSun"
             );
             builder.useDefaultPageSize(210, 297, PdfRendererBuilder.PageSizeUnits.MM);

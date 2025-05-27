@@ -56,6 +56,11 @@ const routes = [
                 path: 'cases/create',
                 name: '创建病例',
                 component: () => import('@/views/CaseCreate.vue')
+            },
+            {
+                path: 'assistant',
+                name: 'AI助手',
+                component: () => import('@/views/AssistantChat.vue')
             }
         ]
     },

@@ -10,6 +10,7 @@
     <el-menu-item index="/cases/stat">ICD 统计</el-menu-item>
     <el-menu-item index="/patient/icd-stat">我的 ICD</el-menu-item>
     <el-menu-item index="/settings">个人设置</el-menu-item>
+    <el-menu-item index="/assistant">AI 助手</el-menu-item>
   </el-menu>
 </template>
 
