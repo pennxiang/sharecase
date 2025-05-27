@@ -3,20 +3,16 @@ package com.sharedcase.util;
 import com.sharedcase.config.ContractConfig;
 import org.fisco.bcos.sdk.v3.BcosSDK;
 import org.fisco.bcos.sdk.v3.client.Client;
-import org.fisco.bcos.sdk.v3.config.exceptions.ConfigException;
 import org.fisco.bcos.sdk.v3.contract.Contract;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
-import java.util.Map;
 import java.util.Optional;
 
 /**

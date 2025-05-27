@@ -12,7 +12,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 @SpringBootApplication
 @MapperScan("com.sharedcase.dao")
-@DS("master")
 public class SharedcaseApplication {
     public static void main(String[] args) {
         SpringApplication.run(SharedcaseApplication.class, args);

@@ -3,21 +3,27 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-export default defineConfig({
-  plugins: [vue()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
+export default defineConfig(() => {
+  return {
+    plugins: [vue()],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, 'src'),
+      },
     },
-  },
-  server: {
-    proxy: {
-      // 把 /api 的请求代理到后端
-      '/api': {
-        target: 'http://localhost:8888', // 你后端 SpringBoot 跑的地址端口
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/api/, '')
+    base: '/',
+    server: {
+      proxy: {
+        '/api': {
+          target: 'http://localhost:8888', // 开发代理地址
+          changeOrigin: true,
+          rewrite: path => path.replace(/^\/api/, '')
+        }
       }
+    },
+    build: {
+      outDir: 'dist',  // 打包输出目录
+      sourcemap: false // 是否生成 .map 调试文件（建议 false）
     }
   }
 })

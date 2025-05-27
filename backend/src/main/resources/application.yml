@@ -1,7 +1,8 @@
 # web服务设置
 server:
   port: 8888
-  context-path: /
+  servlet:
+    context-path: /
 
 # DateSource
 spring:
@@ -9,11 +10,14 @@ spring:
     driverClassName: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
     username: root
-    password: "xpeng,2202"
+    password: xpeng,2202
   security:
     user:
       name: admin
       password: admin123
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
 
 mybatis-plus:
   mapper-locations: class*:mapper/**/*.xml
@@ -31,6 +35,7 @@ ipfs:
 fisco:
   # FISCO-BCOS SDK配置文件路径, 文件系统的绝对路径
   sdkConfigPath: D:\Projects\lessonprojects\sharedcase\backend\src\main\resources\sdk\config.toml
+  # sdkConfigPath: /home/ubuntu/fisco/console/conf/config.toml
   contract:
     addresses:
       userRegistry: "0xd24180cc0fef2f3e545de4f9aafc09345cd08903"

@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * ClassName: PdfExportUtil
@@ -104,17 +105,17 @@ public class PdfUtil {
                 </body>
                 </html>
                 """.formatted(
-                aCaseDetail.getCaseId(),
-                aCaseDetail.getTitle(),
-                aCaseDetail.getIcdCode(),
-                aCaseDetail.getHospitalAddress(),
-                aCaseDetail.getPatientAddress(),
-                aCaseDetail.getDoctorAddress(),
-                aCaseDetail.getChiefComplaint(),
-                aCaseDetail.getPresentIllness(),
-                aCaseDetail.getPastHistory(),
-                aCaseDetail.getDiagnosis(),
-                aCaseDetail.getDoctorAdvice(),
+                Optional.ofNullable(aCaseDetail.getCaseId()).orElse(""),
+                Optional.ofNullable(aCaseDetail.getTitle()).orElse(""),
+                Optional.ofNullable(aCaseDetail.getIcdCode()).orElse(""),
+                Optional.ofNullable(aCaseDetail.getHospitalAddress()).orElse(""),
+                Optional.ofNullable(aCaseDetail.getPatientAddress()).orElse(""),
+                Optional.ofNullable(aCaseDetail.getDoctorAddress()).orElse(""),
+                Optional.ofNullable(aCaseDetail.getChiefComplaint()).orElse(""),
+                Optional.ofNullable(aCaseDetail.getPresentIllness()).orElse(""),
+                Optional.ofNullable(aCaseDetail.getPastHistory()).orElse(""),
+                Optional.ofNullable(aCaseDetail.getDiagnosis()).orElse(""),
+                Optional.ofNullable(aCaseDetail.getDoctorAdvice()).orElse(""),
                 aCaseDetail.getVisitTime() != null ? aCaseDetail.getVisitTime().format(formatter) : ""
         );
     }

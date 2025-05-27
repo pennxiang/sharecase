@@ -1,5 +1,6 @@
 [cryptoMaterial]
 
+# 实际需更改
 certPath = "D:/text/fisco_test/fisco-medical/sdk"                           # The certification path
 disableSsl = "false"                        # Communication with nodes without SSL
 useSMCrypto = "false"                       # RPC SM crypto type
@@ -19,6 +20,7 @@ useSMCrypto = "false"                       # RPC SM crypto type
 [network]
 messageTimeout = "10000"
 defaultGroup="group0"                            # Console default group to connect
+# ip需更改
 peers=["192.168.184.222:20200", "127.0.0.1:20201"]    # The peer list to connect
 
 [account]
